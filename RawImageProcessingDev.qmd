@@ -593,15 +593,16 @@ rep7_img_dirs.sort()
 
 ```{python}
 # Replicate 7
-result_dir = results_dir + "/results/20230129_rep7"
+result_dir = results_dir + "/results/20230224_rep7"
 Path(result_dir).mkdir(parents=True, exist_ok=True)
 for dir in rep7_img_dirs:
-    if dir == "10.12.22_7PM_TP3_Chito5":
-        print("This batch has patch 8 missing, may need to check in future!")
+    # if dir == "10.12.22_7PM_TP3_Chito5":
+    #     print("This batch has patch 8 missing, may need to check in future!")
     img_dir = rep7_dir + '/' + dir 
     all_channels_ori = []
     all_channels = []
     all_channels_sharp = []
+    all_channels_zoomout = []
     for chi, channel in enumerate(['w4SD RFP', 'w3SD GFP', 'w2SD DAPI']):
         masked_file = img_dir + '/' + dir + '_1_w1SD BF_stitched_mask.tif'
         tif_files = [img_dir + '/' + dir + '_1_' + channel +  '_s' + str(i+1) + '.TIF' for i in range(patch_number)]
@@ -631,21 +632,26 @@ for dir in rep7_img_dirs:
 
         all_channels_ori.append(imgn)
         all_channels_sharp.append(imgn_sharp)
+        all_channels_zoomout.append(imgn_small)
         
     combined_img_ori = np.transpose(all_channels_ori, (1,2,0))
     combined_img_sharp = np.transpose(all_channels_sharp, (1,2,0))
+    combined_img_zoomout = np.transpose(all_channels_zoomout, (1,2,0))
         
     output = result_dir + '/' + dir + '_1_combined_processed'
     img_out_ori = output + '.TIF'
     img_out_sharp = output + '_sharp.TIF'
+    img_out_zoomout = output + '_zoomout.TIF'
     img_out_small_ori = output + '_small.TIF'
-    img_out_small_sharp = output + '_small_sharp.TIF'
+    img_out_small_sharp = output + '_sharp_small.TIF'
+    img_out_small_zoomout = output + '_zoomout_small.TIF'
     pkl_out_ori = output + '.pkl'
     plot_out_ori = output + '_1d.png'
-    # plot_out_sharp = output + '_1d_sharp.png'
+    plot_out_sharp = output + '_1d_sharp.png'
     
     tifffile.imsave(img_out_ori, combined_img_ori)
     tifffile.imsave(img_out_sharp, combined_img_sharp)
+    tifffile.imsave(img_out_zoomout, combined_img_zoomout)
 
     with open(pkl_out_ori, 'wb') as f:
         pickle.dump(combined_img_ori, f)
@@ -658,6 +664,11 @@ for dir in rep7_img_dirs:
     plt.figure(figsize=(16,8))
     plt.imshow(combined_img_sharp)
     plt.savefig(img_out_small_sharp, dpi=200)
+    plt.close()
+
+    plt.figure(figsize=(16,8))
+    plt.imshow(combined_img_zoomout)
+    plt.savefig(img_out_small_zoomout, dpi=200)
     plt.close()
 
     pop_den = get_pop_density(slide_sum_y_vol(combined_img_ori, 500))
@@ -688,12 +699,13 @@ min_thrs = [32, 48, 128]
 result_dir = results_dir + "/results/20230130_rep7"
 Path(result_dir).mkdir(parents=True, exist_ok=True)
 for dir in rep7_img_dirs:
-    if dir == "10.12.22_7PM_TP3_Chito5":
-        print("This batch has patch 8 missing, may need to check in future!")
+    # if dir == "10.12.22_7PM_TP3_Chito5":
+    #     print("This batch has patch 8 missing, may need to check in future!")
     img_dir = rep7_dir + '/' + dir 
     all_channels_ori = []
     all_channels = []
     all_channels_sharp = []
+    all_channels_zoomout = []
     for chi, channel in enumerate(['w4SD RFP', 'w3SD GFP', 'w2SD DAPI']):
         masked_file = img_dir + '/' + dir + '_1_w1SD BF_stitched_mask.tif'
         tif_files = [img_dir + '/' + dir + '_1_' + channel +  '_s' + str(i+1) + '.TIF' for i in range(patch_number)]
@@ -723,21 +735,26 @@ for dir in rep7_img_dirs:
 
         all_channels_ori.append(imgn)
         all_channels_sharp.append(imgn_sharp)
+        all_channels_zoomout.append(imgn_small)
         
     combined_img_ori = np.transpose(all_channels_ori, (1,2,0))
     combined_img_sharp = np.transpose(all_channels_sharp, (1,2,0))
+    combined_img_zoomout = np.transpose(all_channels_zoomout, (1,2,0))
         
     output = result_dir + '/' + dir + '_1_combined_processed'
     img_out_ori = output + '.TIF'
     img_out_sharp = output + '_sharp.TIF'
+    img_out_zoomout = output + '_zoomout.TIF'
     img_out_small_ori = output + '_small.TIF'
     img_out_small_sharp = output + '_small_sharp.TIF'
+    img_out_small_zoomout = output + '_zoomout_small.TIF'
     pkl_out_ori = output + '.pkl'
     plot_out_ori = output + '_1d.png'
-    # plot_out_sharp = output + '_1d_sharp.png'
+    plot_out_sharp = output + '_1d_sharp.png'
     
     tifffile.imsave(img_out_ori, combined_img_ori)
     tifffile.imsave(img_out_sharp, combined_img_sharp)
+    tifffile.imsave(img_out_zoomout, combined_img_zoomout)
 
     with open(pkl_out_ori, 'wb') as f:
         pickle.dump(combined_img_ori, f)
@@ -750,6 +767,11 @@ for dir in rep7_img_dirs:
     plt.figure(figsize=(16,8))
     plt.imshow(combined_img_sharp)
     plt.savefig(img_out_small_sharp, dpi=200)
+    plt.close()
+
+    plt.figure(figsize=(16,8))
+    plt.imshow(combined_img_zoomout)
+    plt.savefig(img_out_small_zoomout, dpi=200)
     plt.close()
 
     pop_den = get_pop_density(slide_sum_y_vol(combined_img_ori, 500))
