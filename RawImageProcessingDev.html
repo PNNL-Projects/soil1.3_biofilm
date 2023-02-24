@@ -36,6 +36,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 .highlight .m { color: var(--jp-mirror-editor-number-color) } /* Literal.Number */
 .highlight .s { color: var(--jp-mirror-editor-string-color) } /* Literal.String */
 .highlight .ow { color: var(--jp-mirror-editor-operator-color); font-weight: bold } /* Operator.Word */
+.highlight .pm { color: var(--jp-mirror-editor-punctuation-color) } /* Punctuation.Marker */
 .highlight .w { color: var(--jp-mirror-editor-variable-color) } /* Text.Whitespace */
 .highlight .mb { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Bin */
 .highlight .mf { color: var(--jp-mirror-editor-number-color) } /* Literal.Number.Float */
@@ -14457,25 +14458,98 @@ all of MD as it is not optimized for dense, information rich UIs.
 </style>
 
 <style type="text/css">
-a.anchor-link {
-   display: none;
+/* Force rendering true colors when outputing to pdf */
+* {
+  -webkit-print-color-adjust: exact;
 }
-.highlight  {
-    margin: 0.4em;
+
+/* Misc */
+a.anchor-link {
+  display: none;
 }
 
 /* Input area styling */
 .jp-InputArea {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 .jp-InputArea-editor {
-    overflow: hidden;
+  overflow: hidden;
+}
+
+.CodeMirror.cm-s-jupyter .highlight pre {
+/* weird, but --jp-code-padding defined to be 5px but 4px horizontal padding is hardcoded for pre.CodeMirror-line */
+  padding: var(--jp-code-padding) 4px;
+  margin: 0;
+
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+
+}
+
+.jp-OutputArea-output pre {
+  line-height: inherit;
+  font-family: inherit;
+}
+
+.jp-RenderedText pre {
+  color: var(--jp-content-font-color1);
+  font-size: var(--jp-code-font-size);
+}
+
+/* Using table instead of flexbox so that we can use break-inside property */
+/* CSS rules under this comment should not be required anymore after we move to the JupyterLab 4.0 CSS */
+
+
+.jp-CodeCell.jp-mod-outputsScrolled .jp-OutputArea-prompt {
+  min-width: calc(
+    var(--jp-cell-prompt-width) - var(--jp-private-cell-scrolling-output-offset)
+  );
+}
+
+.jp-OutputArea-child {
+  display: table;
+  width: 100%;
+}
+
+.jp-OutputPrompt {
+  display: table-cell;
+  vertical-align: top;
+  min-width: var(--jp-cell-prompt-width);
+}
+
+body[data-format='mobile'] .jp-OutputPrompt {
+  display: table-row;
+}
+
+.jp-OutputArea-output {
+  display: table-cell;
+  width: 100%;
+}
+
+body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
+  display: table-row;
+}
+
+.jp-OutputArea-output.jp-OutputArea-executeResult {
+  width: 100%;
+}
+
+/* Hiding the collapser by default */
+.jp-Collapser {
+  display: none;
 }
 
 @media print {
-  body {
-    margin: 0;
+  .jp-Cell-inputWrapper,
+  .jp-Cell-outputWrapper {
+    display: block;
+  }
+
+  .jp-OutputArea-child {
+    break-inside: avoid-page;
   }
 }
 </style>
@@ -14502,12 +14576,12 @@ a.anchor-link {
                 },
                 displayAlign: 'center',
                 CommonHTML: {
-                    linebreaks: { 
-                    automatic: true 
+                    linebreaks: {
+                    automatic: true
                     }
                 }
             });
-        
+
             MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
         }
     }
@@ -14517,6 +14591,8 @@ a.anchor-link {
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
@@ -14529,12 +14605,20 @@ a.anchor-link {
 <span class="kn">import</span> <span class="nn">PIL</span>
 <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span><span class="p">,</span> <span class="n">ImageSequence</span><span class="p">,</span> <span class="n">ImageEnhance</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="c1"># Make images higher resolution and set default size</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.dpi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1</span> <span class="kn">import</span> <span class="n">make_axes_locatable</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">cv2</span>
 <span class="kn">import</span> <span class="nn">multipagetiff</span> <span class="k">as</span> <span class="nn">mtif</span>
 <span class="kn">import</span> <span class="nn">tifffile</span>
+<span class="kn">import</span> <span class="nn">ternary</span>
+<span class="kn">import</span> <span class="nn">plotly.express</span> <span class="k">as</span> <span class="nn">px</span>
 </pre></div>
 
      </div>
@@ -14544,6 +14628,8 @@ a.anchor-link {
 
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
@@ -14624,7 +14710,8 @@ a.anchor-link {
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">imgz</span><span class="p">)):</span>
         <span class="n">imgz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">imgz</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">min_thr</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
     <span class="k">return</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">sub_bg_thr</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">min_thr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">sub_bg_thr</span><span class="p">(</span><span class="n">img_ori</span><span class="p">,</span> <span class="n">min_thr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">img_ori</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">threshold</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">threshold</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">filters</span><span class="o">.</span><span class="n">threshold_otsu</span><span class="p">(</span><span class="n">img</span><span class="p">),</span> <span class="n">min_thr</span><span class="p">)</span>
@@ -14643,17 +14730,17 @@ a.anchor-link {
 <span class="k">def</span> <span class="nf">threshold_all</span><span class="p">(</span><span class="n">imgs</span><span class="p">):</span>
     <span class="n">thresholds</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">([</span><span class="n">filters</span><span class="o">.</span><span class="n">threshold_otsu</span><span class="p">(</span><span class="n">img</span><span class="p">)</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">imgz</span><span class="p">])</span> <span class="k">for</span> <span class="n">imgz</span> <span class="ow">in</span> <span class="n">imgs</span><span class="p">]</span>
     <span class="k">return</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">thresholds</span><span class="p">))</span> 
-<span class="k">def</span> <span class="nf">remove_background</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">rolling_ball_radius</span> <span class="o">=</span> <span class="mi">25</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">remove_background</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">rolling_ball_radius</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
     <span class="n">background</span> <span class="o">=</span> <span class="n">restoration</span><span class="o">.</span><span class="n">rolling_ball</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">rolling_ball_radius</span><span class="p">)</span>
     <span class="n">rolling_ball_filtered</span> <span class="o">=</span> <span class="n">img</span> <span class="o">-</span> <span class="n">background</span>
     <span class="k">return</span><span class="p">(</span><span class="n">rolling_ball_filtered</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">remove_background_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">,</span> <span class="n">rolling_ball_radius</span> <span class="o">=</span> <span class="mi">25</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">remove_background_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">,</span> <span class="n">rolling_ball_radius</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">imgz</span><span class="p">)):</span>
         <span class="n">imgz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">remove_background</span><span class="p">(</span><span class="n">imgz</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">rolling_ball_radius</span><span class="p">)</span>
     <span class="k">return</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">denoise</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">min_thr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rolling_ball_filtered</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">denoise</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">min_thr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rolling_ball_filtered</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="k">return</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">remove_background</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">rolling_ball_filtered</span><span class="p">),</span> <span class="n">min_thr</span><span class="p">,</span> <span class="n">threshold</span><span class="p">))</span>
-<span class="k">def</span> <span class="nf">denoise_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">,</span> <span class="n">min_thr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rolling_ball_radius</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">denoise_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">,</span> <span class="n">min_thr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rolling_ball_radius</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
     <span class="n">imgz_denoised</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">imgz</span><span class="p">)):</span>
@@ -14669,10 +14756,10 @@ a.anchor-link {
 
 <span class="k">def</span> <span class="nf">max_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">img_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">imgz</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">img_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">imgz</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="n">img_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
-    <span class="k">return</span><span class="p">(</span><span class="n">img_sum</span><span class="p">)</span>
+        <span class="n">img_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">img_max</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">sum_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">img_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">imgz</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -14743,18 +14830,28 @@ a.anchor-link {
     <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">stitched</span><span class="p">))</span>
 
 <span class="k">def</span> <span class="nf">sharping</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">cut_off</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="n">img_new</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">cut_off</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">cut_off</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">cut_off</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="n">cut_off</span><span class="p">)</span>
-    <span class="n">img</span><span class="p">[</span><span class="n">img</span> <span class="o">&lt;=</span> <span class="n">cut_off</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">img</span><span class="p">[</span><span class="n">img</span> <span class="o">&gt;</span> <span class="n">cut_off</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-    <span class="k">return</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">sum_y</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="n">img_new</span><span class="p">[</span><span class="n">img</span> <span class="o">&lt;=</span> <span class="n">cut_off</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">img_new</span><span class="p">[</span><span class="n">img</span> <span class="o">&gt;</span> <span class="n">cut_off</span><span class="p">]</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">img_new</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">sum_y_int</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
     <span class="n">img1d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">return</span><span class="p">(</span><span class="n">img1d</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">slide_sum_y</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">slide_len</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">slide_sum_y_int</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">slide_len</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
     <span class="n">img1d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">img_slides</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">img1d</span><span class="p">)</span> <span class="o">-</span> <span class="n">slide_len</span><span class="p">):</span>
+        <span class="n">img_slides</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">img1d</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">slide_len</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img_slides</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">sum_y_vol</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="n">img1d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">img1d</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">slide_sum_y_vol</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">slide_len</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+    <span class="n">img1d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">img_slides</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">img1d</span><span class="p">)</span> <span class="o">-</span> <span class="n">slide_len</span><span class="p">):</span>
         <span class="n">img_slides</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">img1d</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">slide_len</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
@@ -14770,7 +14867,8 @@ a.anchor-link {
 <span class="k">def</span> <span class="nf">get_mask_inv</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
     <span class="n">img</span><span class="p">[</span><span class="n">img</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">return</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">mask_img</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">mask_img</span><span class="p">(</span><span class="n">img_ori</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">img_ori</span><span class="p">)</span>
     <span class="n">img</span><span class="p">[</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">return</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">simple_stitch_z_with_mask</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">z_num</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seq_num</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">hr_margin</span> <span class="o">=</span> <span class="mi">233</span><span class="p">,</span> <span class="n">vu_margin</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
@@ -14788,19 +14886,19 @@ a.anchor-link {
 </div>
 </div>
 
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="Set-directories">Set directories<a class="anchor-link" href="#Set-directories">&#182;</a></h2>
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">work_dir</span> <span class="o">=</span> <span class="s2">&quot;/Users/feng626/workspace/data/SoilSFA/spatial_interactions&quot;</span>
 <span class="n">patch_number</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">rolling_ball_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">min_thrs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">48</span><span class="p">,</span> <span class="mi">128</span><span class="p">]</span>
+<span class="n">sharping_thr</span> <span class="o">=</span> <span class="mf">0.01</span>
 
 <span class="n">rep1_dir</span> <span class="o">=</span> <span class="s2">&quot;/Users/feng626/workspace/data/SoilSFA/spatial_interactions/Activity_1.3_rep1_11.18.21_start&quot;</span>
 <span class="n">rep3_dir</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">+</span> <span class="s2">&quot;/Activity_1.3_rep3_02.07.22_start&quot;</span>
@@ -14818,14 +14916,14 @@ a.anchor-link {
 
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Replicate 1</span>
-<span class="n">min_thr</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">sharping_thr</span> <span class="o">=</span> <span class="mf">0.01</span>
-<span class="n">result_dir</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">+</span> <span class="s2">&quot;/results/results_rep1&quot;</span>
+<span class="n">result_dir</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">+</span> <span class="s2">&quot;/results_dev/results_rep1&quot;</span>
 <span class="k">for</span> <span class="n">carbon</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">]:</span>
 <span class="c1"># for carbon, timepoints in zip([&quot;Chitin&quot;, &quot;Chito5&quot;, &quot;Nag&quot;], [[&quot;11.22.21_17&quot;], [&quot;11.22.21_16&quot;], [&quot;11.22.21_15&quot;]]):</span>
     <span class="n">time_dir</span> <span class="o">=</span> <span class="n">rep1_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">carbon</span> 
@@ -14834,51 +14932,49 @@ a.anchor-link {
     <span class="k">for</span> <span class="n">timepoint</span> <span class="ow">in</span> <span class="n">timepoints</span><span class="p">:</span>
         <span class="n">all_channels_ori</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">all_channels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_channels_sharp</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">chi</span><span class="p">,</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s1">&#39;w4SD RFP&#39;</span><span class="p">,</span> <span class="s1">&#39;w3SD GFP&#39;</span><span class="p">,</span> <span class="s1">&#39;w2SD DAPI&#39;</span><span class="p">]):</span>
             <span class="n">masked_file</span> <span class="o">=</span> <span class="n">rep1_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;_1_w1SD BF_stitched_MASK.tif&#39;</span>
             <span class="n">tif_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">rep1_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;_1_&#39;</span> <span class="o">+</span> <span class="n">channel</span> <span class="o">+</span> <span class="s1">&#39;_s&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.TIF&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">patch_number</span><span class="p">)]</span>
             <span class="n">tif_files</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-            <span class="n">imgn_filtered_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
-            <span class="n">imgn_sharp_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed_sharp.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+            <span class="n">imgm_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_masked.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+            <span class="n">imgn_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+            <span class="n">imgn_sharp_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_sharp.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
             <span class="n">projected_csv_file</span> <span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
 
             <span class="n">imgs_mask</span> <span class="o">=</span> <span class="n">get_mask</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">masked_file</span><span class="p">))</span>
             <span class="n">imgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">tif_file</span><span class="p">)</span> <span class="k">for</span> <span class="n">tif_file</span> <span class="ow">in</span> <span class="n">tif_files</span><span class="p">]</span>
             <span class="n">imgz</span> <span class="o">=</span> <span class="n">simple_stitch_z</span><span class="p">(</span><span class="n">imgs</span><span class="p">)</span>
-            <span class="n">imgz_rm_bg</span> <span class="o">=</span> <span class="n">remove_background_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
-            <span class="n">imgz_filtered</span> <span class="o">=</span> <span class="n">filter_z</span><span class="p">(</span><span class="n">imgz_rm_bg</span><span class="p">)</span>  <span class="c1"># Don&#39;t use the minimal threshold</span>
-            <span class="n">masked_imgz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mask_img</span><span class="p">(</span><span class="n">imgzi</span><span class="p">,</span> <span class="n">imgs_mask</span><span class="p">)</span> <span class="k">for</span> <span class="n">imgzi</span> <span class="ow">in</span> <span class="n">imgz_filtered</span><span class="p">])</span>
-            <span class="n">imgp</span> <span class="o">=</span> <span class="n">max_z</span><span class="p">(</span><span class="n">masked_imgz</span><span class="p">)</span>
-            <span class="n">imgp_rm_bg</span> <span class="o">=</span> <span class="n">remove_background_z</span><span class="p">(</span><span class="n">imgp</span><span class="p">)</span>
-            <span class="n">imgp_filtered</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">imgp_rm_bg</span><span class="p">,</span> <span class="n">min_thr</span><span class="p">)</span>
+            <span class="n">imgp</span> <span class="o">=</span> <span class="n">max_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
+            <span class="n">imgp_rm_bg</span> <span class="o">=</span> <span class="n">remove_background</span><span class="p">(</span><span class="n">imgp</span><span class="p">,</span> <span class="n">rolling_ball_sizes</span><span class="p">[</span><span class="n">chi</span><span class="p">])</span>
+            <span class="n">imgm</span> <span class="o">=</span> <span class="n">mask_img</span><span class="p">(</span><span class="n">imgp_rm_bg</span><span class="p">,</span> <span class="n">imgs_mask</span><span class="p">)</span>
+            <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgm_tif_file</span><span class="p">,</span> <span class="n">imgm</span><span class="p">)</span>
+            <span class="n">imgm_filtered</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">imgm</span><span class="p">,</span> <span class="n">min_thrs</span><span class="p">[</span><span class="n">chi</span><span class="p">])</span>  <span class="c1"># Don&#39;t use the minimal threshold</span>
+            <span class="n">imgn</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">imgm_filtered</span><span class="p">)</span>
+            <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_tif_file</span><span class="p">,</span> <span class="n">imgn</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">projected_csv_file</span><span class="p">,</span> <span class="n">imgn</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="n">imgn_sharp</span> <span class="o">=</span> <span class="n">sharping</span><span class="p">(</span><span class="n">imgn</span><span class="p">,</span> <span class="n">sharping_thr</span><span class="p">)</span>
+            <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_sharp_tif_file</span><span class="p">,</span> <span class="n">imgn_sharp</span><span class="p">)</span>
     
-            <span class="n">img_to_merge</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">imgp_filtered</span><span class="p">)</span>
-            <span class="n">img_to_merge</span> <span class="o">=</span> <span class="n">remove_background_z</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">)</span>
-            <span class="n">img_to_merge</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">,</span> <span class="n">min_thr</span><span class="p">)</span>
-            <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_filtered_tif_file</span><span class="p">,</span> <span class="n">img_to_merge</span><span class="p">)</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">projected_csv_file</span><span class="p">,</span> <span class="n">img_to_merge</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-            <span class="n">img2m_sharp</span> <span class="o">=</span> <span class="n">sharping</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">,</span> <span class="n">sharping_thr</span><span class="p">)</span>
-            <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_sharp_tif_file</span><span class="p">,</span> <span class="n">img2m_sharp</span><span class="p">)</span>
-    
-            <span class="n">all_channels_ori</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">)</span>
-            <span class="n">all_channels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img2m_sharp</span><span class="p">)</span>
+            <span class="n">all_channels_ori</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imgn</span><span class="p">)</span>
+            <span class="n">all_channels_sharp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imgn_sharp</span><span class="p">)</span>
             
         <span class="n">combined_img_ori</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">all_channels_ori</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
-        <span class="n">combined_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">all_channels</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">combined_img_sharp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">all_channels_sharp</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
             
         <span class="n">output</span> <span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">timepoint</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">carbon</span> <span class="o">+</span> <span class="s1">&#39;_1_combined_processed&#39;</span>
         <span class="n">img_out_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;.TIF&#39;</span>
-        <span class="n">img_out</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_sharp.TIF&#39;</span>
+        <span class="n">img_out_sharp</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_sharp.TIF&#39;</span>
         <span class="n">img_out_small_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_small.TIF&#39;</span>
-        <span class="n">img_out_small</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_small_sharp.TIF&#39;</span>
-        <span class="n">pkl_out</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span>
+        <span class="n">img_out_small_sharp</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_small_sharp.TIF&#39;</span>
+        <span class="n">pkl_out_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span>
         <span class="n">plot_out_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_1d.png&#39;</span>
-        <span class="n">plot_out</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_1d_sharp.png&#39;</span>
+        <span class="n">plot_out_sharp</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_1d_sharp.png&#39;</span>
         
         <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">img_out_ori</span><span class="p">,</span> <span class="n">combined_img_ori</span><span class="p">)</span>
-        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">img_out</span><span class="p">,</span> <span class="n">combined_img</span><span class="p">)</span>
+        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">img_out_sharp</span><span class="p">,</span> <span class="n">combined_img_sharp</span><span class="p">)</span>
     
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pkl_out</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pkl_out_ori</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">combined_img_ori</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
             
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
@@ -14887,11 +14983,11 @@ a.anchor-link {
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">combined_img</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">img_out_small</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">combined_img_sharp</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">img_out_small_sharp</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     
-        <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y</span><span class="p">(</span><span class="n">combined_img_ori</span><span class="p">,</span> <span class="n">combined_img_ori</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">//</span><span class="mi">20</span><span class="p">))</span>
+        <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y_vol</span><span class="p">(</span><span class="n">combined_img_ori</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
         <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">]</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -14901,15 +14997,16 @@ a.anchor-link {
         <span class="c1"># plt.show()</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     
-        <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y</span><span class="p">(</span><span class="n">combined_img</span><span class="p">,</span> <span class="n">combined_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">//</span><span class="mi">20</span><span class="p">))</span>
+        <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y_vol</span><span class="p">(</span><span class="n">combined_img_sharp</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
         <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">]</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pop_den</span><span class="p">)),</span> <span class="n">pop_den</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
         <span class="c1"># plt.plot(range(len(pop_den)), pop_den, linewidth=2)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_out</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_out_sharp</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
         <span class="c1"># plt.show()</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
 </pre></div>
 
      </div>
@@ -14919,63 +15016,61 @@ a.anchor-link {
 
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Replicate 2</span>
-<span class="n">min_thr</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">sharping_thr</span> <span class="o">=</span> <span class="mf">0.01</span>
-<span class="n">result_dir</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">+</span> <span class="s2">&quot;/results/results_rep2&quot;</span>
+<span class="n">result_dir</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">+</span> <span class="s2">&quot;/results_dev/results_rep2&quot;</span>
 <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="n">rep2_img_dirs</span><span class="p">:</span>
     <span class="n">img_dir</span> <span class="o">=</span> <span class="n">rep2_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> 
     <span class="n">all_channels_ori</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">all_channels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">all_channels_sharp</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">chi</span><span class="p">,</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s1">&#39;w4SD RFP&#39;</span><span class="p">,</span> <span class="s1">&#39;w3SD GFP&#39;</span><span class="p">,</span> <span class="s1">&#39;w2SD DAPI&#39;</span><span class="p">]):</span>
         <span class="n">masked_file</span> <span class="o">=</span> <span class="n">img_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_w1SD BF_stitched_mask.tif&#39;</span>
         <span class="n">tif_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">img_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_&#39;</span> <span class="o">+</span> <span class="n">channel</span> <span class="o">+</span>  <span class="s1">&#39;_s&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.TIF&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">patch_number</span><span class="p">)]</span>
         <span class="n">tif_files</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-        <span class="n">imgn_filtered_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
-        <span class="n">imgn_sharp_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed_sharp.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">imgm_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_masked.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">imgn_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">imgn_sharp_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_sharp.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
         <span class="n">projected_csv_file</span> <span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
-
+        
         <span class="n">imgs_mask</span> <span class="o">=</span> <span class="n">get_mask</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">masked_file</span><span class="p">))</span>
         <span class="n">imgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">tif_file</span><span class="p">)</span> <span class="k">for</span> <span class="n">tif_file</span> <span class="ow">in</span> <span class="n">tif_files</span><span class="p">]</span>
         <span class="n">imgz</span> <span class="o">=</span> <span class="n">simple_stitch_z</span><span class="p">(</span><span class="n">imgs</span><span class="p">)</span>
-        <span class="n">imgz_rm_bg</span> <span class="o">=</span> <span class="n">remove_background_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
-        <span class="n">imgz_filtered</span> <span class="o">=</span> <span class="n">filter_z</span><span class="p">(</span><span class="n">imgz_rm_bg</span><span class="p">)</span>  <span class="c1"># Don&#39;t use the minimal threshold</span>
-        <span class="n">masked_imgz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mask_img</span><span class="p">(</span><span class="n">imgzi</span><span class="p">,</span> <span class="n">imgs_mask</span><span class="p">)</span> <span class="k">for</span> <span class="n">imgzi</span> <span class="ow">in</span> <span class="n">imgz_filtered</span><span class="p">])</span>
-        <span class="n">imgp</span> <span class="o">=</span> <span class="n">max_z</span><span class="p">(</span><span class="n">masked_imgz</span><span class="p">)</span>
-        <span class="n">imgp_rm_bg</span> <span class="o">=</span> <span class="n">remove_background_z</span><span class="p">(</span><span class="n">imgp</span><span class="p">)</span>
-        <span class="n">imgp_filtered</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">imgp_rm_bg</span><span class="p">,</span> <span class="n">min_thr</span><span class="p">)</span>
+        <span class="n">imgp</span> <span class="o">=</span> <span class="n">max_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
+        <span class="n">imgp_rm_bg</span> <span class="o">=</span> <span class="n">remove_background</span><span class="p">(</span><span class="n">imgp</span><span class="p">,</span> <span class="n">rolling_ball_sizes</span><span class="p">[</span><span class="n">chi</span><span class="p">])</span>
+        <span class="n">imgm</span> <span class="o">=</span> <span class="n">mask_img</span><span class="p">(</span><span class="n">imgp_rm_bg</span><span class="p">,</span> <span class="n">imgs_mask</span><span class="p">)</span>
+        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgm_tif_file</span><span class="p">,</span> <span class="n">imgm</span><span class="p">)</span>
+        <span class="n">imgm_filtered</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">imgm</span><span class="p">,</span> <span class="n">min_thrs</span><span class="p">[</span><span class="n">chi</span><span class="p">])</span>  <span class="c1"># Don&#39;t use the minimal threshold</span>
+        <span class="n">imgn</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">imgm_filtered</span><span class="p">)</span>
+        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_tif_file</span><span class="p">,</span> <span class="n">imgn</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">projected_csv_file</span><span class="p">,</span> <span class="n">imgn</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">imgn_sharp</span> <span class="o">=</span> <span class="n">sharping</span><span class="p">(</span><span class="n">imgn</span><span class="p">,</span> <span class="n">sharping_thr</span><span class="p">)</span>
+        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_sharp_tif_file</span><span class="p">,</span> <span class="n">imgn_sharp</span><span class="p">)</span>
 
-        <span class="n">img_to_merge</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">imgp_filtered</span><span class="p">)</span>
-        <span class="n">img_to_merge</span> <span class="o">=</span> <span class="n">remove_background_z</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">)</span>
-        <span class="n">img_to_merge</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">,</span> <span class="n">min_thr</span><span class="p">)</span>
-        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_filtered_tif_file</span><span class="p">,</span> <span class="n">img_to_merge</span><span class="p">)</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">projected_csv_file</span><span class="p">,</span> <span class="n">img_to_merge</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-        <span class="n">img2m_sharp</span> <span class="o">=</span> <span class="n">sharping</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">,</span> <span class="n">sharping_thr</span><span class="p">)</span>
-        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_sharp_tif_file</span><span class="p">,</span> <span class="n">img2m_sharp</span><span class="p">)</span>
-
-        <span class="n">all_channels_ori</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">)</span>
-        <span class="n">all_channels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img2m_sharp</span><span class="p">)</span>
+        <span class="n">all_channels_ori</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imgn</span><span class="p">)</span>
+        <span class="n">all_channels_sharp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imgn_sharp</span><span class="p">)</span>
         
     <span class="n">combined_img_ori</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">all_channels_ori</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
-    <span class="n">combined_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">all_channels</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">combined_img_sharp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">all_channels_sharp</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
         
     <span class="n">output</span> <span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_combined_processed&#39;</span>
     <span class="n">img_out_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;.TIF&#39;</span>
-    <span class="n">img_out</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_sharp.TIF&#39;</span>
+    <span class="n">img_out_sharp</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_sharp.TIF&#39;</span>
     <span class="n">img_out_small_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_small.TIF&#39;</span>
-    <span class="n">img_out_small</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_small_sharp.TIF&#39;</span>
-    <span class="n">pkl_out</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span>
+    <span class="n">img_out_small_sharp</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_small_sharp.TIF&#39;</span>
+    <span class="n">pkl_out_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span>
     <span class="n">plot_out_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_1d.png&#39;</span>
-    <span class="n">plot_out</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_1d_sharp.png&#39;</span>
+    <span class="n">plot_out_sharp</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_1d_sharp.png&#39;</span>
     
     <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">img_out_ori</span><span class="p">,</span> <span class="n">combined_img_ori</span><span class="p">)</span>
-    <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">img_out</span><span class="p">,</span> <span class="n">combined_img</span><span class="p">)</span>
+    <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">img_out_sharp</span><span class="p">,</span> <span class="n">combined_img_sharp</span><span class="p">)</span>
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pkl_out</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pkl_out_ori</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">combined_img_ori</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
         
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
@@ -14984,11 +15079,11 @@ a.anchor-link {
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">combined_img</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">img_out_small</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">combined_img_sharp</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">img_out_small_sharp</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y</span><span class="p">(</span><span class="n">combined_img_ori</span><span class="p">,</span> <span class="n">combined_img_ori</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">//</span><span class="mi">20</span><span class="p">))</span>
+    <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y_vol</span><span class="p">(</span><span class="n">combined_img_ori</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
     <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">]</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -14998,15 +15093,16 @@ a.anchor-link {
     <span class="c1"># plt.show()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y</span><span class="p">(</span><span class="n">combined_img</span><span class="p">,</span> <span class="n">combined_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">//</span><span class="mi">20</span><span class="p">))</span>
+    <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y_vol</span><span class="p">(</span><span class="n">combined_img_sharp</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
     <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">]</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pop_den</span><span class="p">)),</span> <span class="n">pop_den</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
     <span class="c1"># plt.plot(range(len(pop_den)), pop_den, linewidth=2)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_out</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_out_sharp</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
     <span class="c1"># plt.show()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
 </pre></div>
 
      </div>
@@ -15016,65 +15112,63 @@ a.anchor-link {
 
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
 <div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Replicate 3</span>
-<span class="n">min_thr</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">sharping_thr</span> <span class="o">=</span> <span class="mf">0.01</span>
-<span class="n">result_dir</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">+</span> <span class="s2">&quot;/results/results_rep3&quot;</span>
+<span class="n">result_dir</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">+</span> <span class="s2">&quot;/results_dev/results_rep3&quot;</span>
 <span class="k">for</span> <span class="nb">dir</span> <span class="ow">in</span> <span class="n">rep3_img_dirs</span><span class="p">:</span>
     <span class="k">if</span> <span class="nb">dir</span> <span class="o">==</span> <span class="s2">&quot;02.09.22_11AM_Chito5&quot;</span><span class="p">:</span>
         <span class="k">continue</span>
     <span class="n">img_dir</span> <span class="o">=</span> <span class="n">rep3_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> 
     <span class="n">all_channels_ori</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">all_channels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">all_channels_sharp</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">chi</span><span class="p">,</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s1">&#39;w4SD RFP&#39;</span><span class="p">,</span> <span class="s1">&#39;w3SD GFP&#39;</span><span class="p">,</span> <span class="s1">&#39;w2SD DAPI&#39;</span><span class="p">]):</span>
         <span class="n">masked_file</span> <span class="o">=</span> <span class="n">img_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_w1SD BF_stitched_mask.tif&#39;</span>
         <span class="n">tif_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">img_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_&#39;</span> <span class="o">+</span> <span class="n">channel</span> <span class="o">+</span>  <span class="s1">&#39;_s&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.TIF&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">patch_number</span><span class="p">)]</span>
         <span class="n">tif_files</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-        <span class="n">imgn_filtered_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
-        <span class="n">imgn_sharp_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed_sharp.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">imgm_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_masked.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">imgn_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">imgn_sharp_tif_file</span><span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_sharp.TIF&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
         <span class="n">projected_csv_file</span> <span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_</span><span class="si">{}</span><span class="s1">_processed.csv&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
-
+        
         <span class="n">imgs_mask</span> <span class="o">=</span> <span class="n">get_mask</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">masked_file</span><span class="p">))</span>
         <span class="n">imgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">tif_file</span><span class="p">)</span> <span class="k">for</span> <span class="n">tif_file</span> <span class="ow">in</span> <span class="n">tif_files</span><span class="p">]</span>
         <span class="n">imgz</span> <span class="o">=</span> <span class="n">simple_stitch_z</span><span class="p">(</span><span class="n">imgs</span><span class="p">)</span>
-        <span class="n">imgz_rm_bg</span> <span class="o">=</span> <span class="n">remove_background_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
-        <span class="n">imgz_filtered</span> <span class="o">=</span> <span class="n">filter_z</span><span class="p">(</span><span class="n">imgz_rm_bg</span><span class="p">)</span>  <span class="c1"># Don&#39;t use the minimal threshold</span>
-        <span class="n">masked_imgz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mask_img</span><span class="p">(</span><span class="n">imgzi</span><span class="p">,</span> <span class="n">imgs_mask</span><span class="p">)</span> <span class="k">for</span> <span class="n">imgzi</span> <span class="ow">in</span> <span class="n">imgz_filtered</span><span class="p">])</span>
-        <span class="n">imgp</span> <span class="o">=</span> <span class="n">max_z</span><span class="p">(</span><span class="n">masked_imgz</span><span class="p">)</span>
-        <span class="n">imgp_rm_bg</span> <span class="o">=</span> <span class="n">remove_background_z</span><span class="p">(</span><span class="n">imgp</span><span class="p">)</span>
-        <span class="n">imgp_filtered</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">imgp_rm_bg</span><span class="p">,</span> <span class="n">min_thr</span><span class="p">)</span>
+        <span class="n">imgp</span> <span class="o">=</span> <span class="n">max_z</span><span class="p">(</span><span class="n">imgz</span><span class="p">)</span>
+        <span class="n">imgp_rm_bg</span> <span class="o">=</span> <span class="n">remove_background</span><span class="p">(</span><span class="n">imgp</span><span class="p">,</span> <span class="n">rolling_ball_sizes</span><span class="p">[</span><span class="n">chi</span><span class="p">])</span>
+        <span class="n">imgm</span> <span class="o">=</span> <span class="n">mask_img</span><span class="p">(</span><span class="n">imgp_rm_bg</span><span class="p">,</span> <span class="n">imgs_mask</span><span class="p">)</span>
+        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgm_tif_file</span><span class="p">,</span> <span class="n">imgm</span><span class="p">)</span>
+        <span class="n">imgm_filtered</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">imgm</span><span class="p">,</span> <span class="n">min_thrs</span><span class="p">[</span><span class="n">chi</span><span class="p">])</span>  <span class="c1"># Don&#39;t use the minimal threshold</span>
+        <span class="n">imgn</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">imgm_filtered</span><span class="p">)</span>
+        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_tif_file</span><span class="p">,</span> <span class="n">imgn</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">projected_csv_file</span><span class="p">,</span> <span class="n">imgn</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">imgn_sharp</span> <span class="o">=</span> <span class="n">sharping</span><span class="p">(</span><span class="n">imgn</span><span class="p">,</span> <span class="n">sharping_thr</span><span class="p">)</span>
+        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_sharp_tif_file</span><span class="p">,</span> <span class="n">imgn_sharp</span><span class="p">)</span>
 
-        <span class="n">img_to_merge</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">imgp_filtered</span><span class="p">)</span>
-        <span class="n">img_to_merge</span> <span class="o">=</span> <span class="n">remove_background_z</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">)</span>
-        <span class="n">img_to_merge</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">,</span> <span class="n">min_thr</span><span class="p">)</span>
-        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_filtered_tif_file</span><span class="p">,</span> <span class="n">img_to_merge</span><span class="p">)</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">projected_csv_file</span><span class="p">,</span> <span class="n">img_to_merge</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-        <span class="n">img2m_sharp</span> <span class="o">=</span> <span class="n">sharping</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">,</span> <span class="n">sharping_thr</span><span class="p">)</span>
-        <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">imgn_sharp_tif_file</span><span class="p">,</span> <span class="n">img2m_sharp</span><span class="p">)</span>
-
-        <span class="n">all_channels_ori</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img_to_merge</span><span class="p">)</span>
-        <span class="n">all_channels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img2m_sharp</span><span class="p">)</span>
+        <span class="n">all_channels_ori</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imgn</span><span class="p">)</span>
+        <span class="n">all_channels_sharp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imgn_sharp</span><span class="p">)</span>
         
     <span class="n">combined_img_ori</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">all_channels_ori</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
-    <span class="n">combined_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">all_channels</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">combined_img_sharp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">all_channels_sharp</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
         
     <span class="n">output</span> <span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">dir</span> <span class="o">+</span> <span class="s1">&#39;_1_combined_processed&#39;</span>
     <span class="n">img_out_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;.TIF&#39;</span>
-    <span class="n">img_out</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_sharp.TIF&#39;</span>
+    <span class="n">img_out_sharp</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_sharp.TIF&#39;</span>
     <span class="n">img_out_small_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_small.TIF&#39;</span>
-    <span class="n">img_out_small</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_small_sharp.TIF&#39;</span>
-    <span class="n">pkl_out</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span>
+    <span class="n">img_out_small_sharp</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_small_sharp.TIF&#39;</span>
+    <span class="n">pkl_out_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span>
     <span class="n">plot_out_ori</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_1d.png&#39;</span>
-    <span class="n">plot_out</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_1d_sharp.png&#39;</span>
+    <span class="n">plot_out_sharp</span> <span class="o">=</span> <span class="n">output</span> <span class="o">+</span> <span class="s1">&#39;_1d_sharp.png&#39;</span>
     
     <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">img_out_ori</span><span class="p">,</span> <span class="n">combined_img_ori</span><span class="p">)</span>
-    <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">img_out</span><span class="p">,</span> <span class="n">combined_img</span><span class="p">)</span>
+    <span class="n">tifffile</span><span class="o">.</span><span class="n">imsave</span><span class="p">(</span><span class="n">img_out_sharp</span><span class="p">,</span> <span class="n">combined_img_sharp</span><span class="p">)</span>
 
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pkl_out</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pkl_out_ori</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">combined_img_ori</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
         
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
@@ -15083,11 +15177,11 @@ a.anchor-link {
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">combined_img</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">img_out_small</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">combined_img_sharp</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">img_out_small_sharp</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y</span><span class="p">(</span><span class="n">combined_img_ori</span><span class="p">,</span> <span class="n">combined_img_ori</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">//</span><span class="mi">20</span><span class="p">))</span>
+    <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y_vol</span><span class="p">(</span><span class="n">combined_img_ori</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
     <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">]</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
@@ -15097,15 +15191,822 @@ a.anchor-link {
     <span class="c1"># plt.show()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y</span><span class="p">(</span><span class="n">combined_img</span><span class="p">,</span> <span class="n">combined_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">//</span><span class="mi">20</span><span class="p">))</span>
+    <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y_vol</span><span class="p">(</span><span class="n">combined_img_sharp</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
     <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">]</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pop_den</span><span class="p">)),</span> <span class="n">pop_den</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
     <span class="c1"># plt.plot(range(len(pop_den)), pop_den, linewidth=2)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_out</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_out_sharp</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
     <span class="c1"># plt.show()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">rep2_img_dirs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rep3_img_dirs</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>[&#39;12.13.21_10PM_Chito5&#39;, &#39;12.13.21_11PM_Chitin&#39;, &#39;12.13.21_9PM_Nag&#39;, &#39;12.14.21_10AM_Chitin&#39;, &#39;12.14.21_7PM_Nag&#39;, &#39;12.14.21_8AM_Nag&#39;, &#39;12.14.21_8PM_Chito5&#39;, &#39;12.14.21_9AM_Chito5&#39;, &#39;12.14.21_9PM_Chitin&#39;, &#39;12.15.21_10AM_Chitin&#39;, &#39;12.15.21_8AM_Nag&#39;, &#39;12.15.21_9AM_Chito5&#39;, &#39;12.16.21_3PM_Nag&#39;, &#39;12.16.21_4PM_Chito5&#39;, &#39;12.16.21_5PM_Chitin&#39;, &#39;12.17.21_3PM_Nag&#39;, &#39;12.17.21_4PM_Chito5&#39;, &#39;12.17.21_5PM_Chitin&#39;]
+[&#39;02.07.22_10PM_Chito5&#39;, &#39;02.07.22_11PM_Chitin&#39;, &#39;02.07.22_9PM_NAG&#39;, &#39;02.08.22_10AM_Chitin&#39;, &#39;02.08.22_7PM_NAG&#39;, &#39;02.08.22_8AM_NAG&#39;, &#39;02.08.22_8PM_Chito5&#39;, &#39;02.08.22_9AM_Chito5&#39;, &#39;02.08.22_9PM_Chitin&#39;, &#39;02.09.22_10AM_NAG&#39;, &#39;02.09.22_11AM_Chito5&#39;, &#39;02.09.22_12PM_Chitin&#39;, &#39;02.10.22_3PM_NAG&#39;, &#39;02.10.22_4PM_Chito5&#39;, &#39;02.10.22_5PM_Chitin&#39;, &#39;02.11.22_3PM_NAG&#39;, &#39;02.11.22_4PM_Chito5&#39;, &#39;02.11.22_5PM_Chitin&#39;]
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rep2_img_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;12.13.21_10PM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;12.13.21_11PM_Chitin&#39;</span><span class="p">,</span> <span class="s1">&#39;12.13.21_9PM_Nag&#39;</span><span class="p">,</span> <span class="s1">&#39;12.14.21_10AM_Chitin&#39;</span><span class="p">,</span> <span class="s1">&#39;12.14.21_7PM_Nag&#39;</span><span class="p">,</span> <span class="s1">&#39;12.14.21_8AM_Nag&#39;</span><span class="p">,</span> <span class="s1">&#39;12.14.21_8PM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;12.14.21_9AM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;12.14.21_9PM_Chitin&#39;</span><span class="p">,</span> <span class="s1">&#39;12.15.21_10AM_Chitin&#39;</span><span class="p">,</span> <span class="s1">&#39;12.15.21_8AM_Nag&#39;</span><span class="p">,</span> <span class="s1">&#39;12.15.21_9AM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;12.16.21_3PM_Nag&#39;</span><span class="p">,</span> <span class="s1">&#39;12.16.21_4PM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;12.16.21_5PM_Chitin&#39;</span><span class="p">,</span> <span class="s1">&#39;12.17.21_3PM_Nag&#39;</span><span class="p">,</span> <span class="s1">&#39;12.17.21_4PM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;12.17.21_5PM_Chitin&#39;</span><span class="p">]</span>
+<span class="n">rep3_img_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;02.07.22_10PM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;02.07.22_11PM_Chitin&#39;</span><span class="p">,</span> <span class="s1">&#39;02.07.22_9PM_NAG&#39;</span><span class="p">,</span> <span class="s1">&#39;02.08.22_10AM_Chitin&#39;</span><span class="p">,</span> <span class="s1">&#39;02.08.22_7PM_NAG&#39;</span><span class="p">,</span> <span class="s1">&#39;02.08.22_8AM_NAG&#39;</span><span class="p">,</span> <span class="s1">&#39;02.08.22_8PM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;02.08.22_9AM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;02.08.22_9PM_Chitin&#39;</span><span class="p">,</span> <span class="s1">&#39;02.09.22_10AM_NAG&#39;</span><span class="p">,</span> <span class="s1">&#39;02.09.22_11AM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;02.09.22_12PM_Chitin&#39;</span><span class="p">,</span> <span class="s1">&#39;02.10.22_3PM_NAG&#39;</span><span class="p">,</span> <span class="s1">&#39;02.10.22_4PM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;02.10.22_5PM_Chitin&#39;</span><span class="p">,</span> <span class="s1">&#39;02.11.22_3PM_NAG&#39;</span><span class="p">,</span> <span class="s1">&#39;02.11.22_4PM_Chito5&#39;</span><span class="p">,</span> <span class="s1">&#39;02.11.22_5PM_Chitin&#39;</span><span class="p">]</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rep1_samples</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">carbon</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">]:</span>
+    <span class="n">time_dir</span> <span class="o">=</span> <span class="n">rep1_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">carbon</span> 
+    <span class="n">timepoints</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">time_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">time_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">))]</span> 
+    <span class="n">timepoints</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="n">rep1_samples</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="n">zipped</span><span class="p">)</span> <span class="k">for</span> <span class="n">zipped</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">timepoints</span><span class="p">,</span> <span class="p">[</span><span class="n">carbon</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">timepoints</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">37</span><span class="p">,</span> <span class="mi">66</span><span class="p">,</span> <span class="mi">90</span><span class="p">])])</span>
+<span class="n">rep1_samples</span> <span class="o">=</span> <span class="n">rep1_samples</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">rep1_samples</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">rep1_samples</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">rep1_samples</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[&nbsp;]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>[[&#39;11.18.21_21&#39;, &#39;Nag&#39;, 0],
+ [&#39;11.19.21_08&#39;, &#39;Nag&#39;, 11],
+ [&#39;11.19.21_18&#39;, &#39;Nag&#39;, 21],
+ [&#39;11.20.21_10&#39;, &#39;Nag&#39;, 37],
+ [&#39;11.21.21_15&#39;, &#39;Nag&#39;, 66],
+ [&#39;11.22.21_15&#39;, &#39;Nag&#39;, 90],
+ [&#39;11.18.21_22&#39;, &#39;Chito5&#39;, 0],
+ [&#39;11.19.21_09&#39;, &#39;Chito5&#39;, 11],
+ [&#39;11.19.21_19&#39;, &#39;Chito5&#39;, 21],
+ [&#39;11.20.21_11&#39;, &#39;Chito5&#39;, 37],
+ [&#39;11.21.21_16&#39;, &#39;Chito5&#39;, 66],
+ [&#39;11.22.21_16&#39;, &#39;Chito5&#39;, 90],
+ [&#39;11.18.21_23&#39;, &#39;Chitin&#39;, 0],
+ [&#39;11.19.21_10&#39;, &#39;Chitin&#39;, 11],
+ [&#39;11.19.21_20&#39;, &#39;Chitin&#39;, 21],
+ [&#39;11.20.21_12&#39;, &#39;Chitin&#39;, 37],
+ [&#39;11.21.21_17&#39;, &#39;Chitin&#39;, 66],
+ [&#39;11.22.21_17&#39;, &#39;Chitin&#39;, 90]]</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rep2_samples</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;12.13.21_9PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.14.21_8AM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.14.21_7PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">22</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.15.21_8AM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">35</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.16.21_3PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">66</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.17.21_3PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.13.21_10PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.14.21_9AM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.14.21_8PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">22</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.15.21_9AM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">35</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.16.21_4PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">66</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.17.21_4PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.13.21_11PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.14.21_10AM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.14.21_9PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">22</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.15.21_10AM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">35</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.16.21_5PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">66</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;12.17.21_5PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">90</span><span class="p">]]</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rep3_samples</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;02.07.22_9PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.08.22_8AM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.08.22_7PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">22</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.09.22_10AM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">37</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.10.22_3PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">66</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.11.22_3PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Nag&quot;</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.07.22_10PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.08.22_9AM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.08.22_8PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">22</span><span class="p">],</span>
+                <span class="c1"># [&quot;02.09.22_11AM&quot;, &quot;Chito5&quot;, 37],</span>
+                <span class="p">[</span><span class="s2">&quot;02.10.22_4PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">66</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.11.22_4PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chito5&quot;</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.07.22_11PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.08.22_10AM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.08.22_9PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">22</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.09.22_12PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">37</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.10.22_5PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">66</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">&quot;02.11.22_5PM&quot;</span><span class="p">,</span> <span class="s2">&quot;Chitin&quot;</span><span class="p">,</span> <span class="mi">90</span><span class="p">]]</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result_dir</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">+</span> <span class="s2">&quot;/results_20220408&quot;</span>
+<span class="n">pop_densities</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">rep_samples</span><span class="p">,</span> <span class="n">folder</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">rep1_samples</span><span class="p">,</span> <span class="n">rep2_samples</span><span class="p">,</span> <span class="n">rep3_samples</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;results_rep&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]):</span>
+    <span class="n">rep_dir</span> <span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">folder</span>    
+    <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">rep_samples</span><span class="p">:</span>
+        <span class="n">rgb_file</span> <span class="o">=</span> <span class="n">rep_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">sample</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">sample</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_1_combined_processed.pkl&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rgb_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">rgb_array</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">pops</span> <span class="o">=</span> <span class="n">rgb_array</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">pop_den</span> <span class="o">=</span> <span class="n">pops</span> <span class="o">/</span> <span class="n">pops</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">pop_densities</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">folder</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sample</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sample</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">pop_den</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pop_den</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">pop_den</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+<span class="c1"># pop_den_table = [list(pop_deni) for pop_deni in zip(*pop_densities)]</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_den_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">pop_densities</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Rep&quot;</span><span class="p">,</span> <span class="s2">&quot;Carbon&quot;</span><span class="p">,</span> <span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="s2">&quot;R&quot;</span><span class="p">,</span> <span class="s2">&quot;G&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">])</span>
+<span class="n">pop_den_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[&nbsp;]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Rep</th>
+      <th>Carbon</th>
+      <th>Time</th>
+      <th>R</th>
+      <th>G</th>
+      <th>B</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>rep1</td>
+      <td>Nag</td>
+      <td>0</td>
+      <td>0.373772</td>
+      <td>0.013258</td>
+      <td>0.612970</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>rep1</td>
+      <td>Nag</td>
+      <td>11</td>
+      <td>0.182860</td>
+      <td>0.016181</td>
+      <td>0.800959</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>rep1</td>
+      <td>Nag</td>
+      <td>21</td>
+      <td>0.027128</td>
+      <td>0.020428</td>
+      <td>0.952443</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>rep1</td>
+      <td>Nag</td>
+      <td>37</td>
+      <td>0.080007</td>
+      <td>0.085327</td>
+      <td>0.834666</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>rep1</td>
+      <td>Nag</td>
+      <td>66</td>
+      <td>0.058351</td>
+      <td>0.139180</td>
+      <td>0.802468</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter_ternary</span><span class="p">(</span><span class="n">pop_den_df</span><span class="p">[</span><span class="n">pop_den_df</span><span class="p">[</span><span class="s2">&quot;Rep&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;rep1&quot;</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Carbon&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="s2">&quot;results/rep1.pdf&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter_ternary</span><span class="p">(</span><span class="n">pop_den_df</span><span class="p">[</span><span class="n">pop_den_df</span><span class="p">[</span><span class="s2">&quot;Rep&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;rep2&quot;</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Carbon&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="s2">&quot;results/rep2.pdf&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter_ternary</span><span class="p">(</span><span class="n">pop_den_df</span><span class="p">[</span><span class="n">pop_den_df</span><span class="p">[</span><span class="s2">&quot;Rep&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;rep3&quot;</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Carbon&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="s2">&quot;results/rep3.pdf&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter_ternary</span><span class="p">(</span><span class="n">pop_den_df</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Carbon&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;Rep&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="s2">&quot;results/rep123.pdf&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">slide_win</span> <span class="o">=</span> <span class="mi">1500</span>
+<span class="n">result_dir</span> <span class="o">=</span> <span class="n">work_dir</span> <span class="o">+</span> <span class="s2">&quot;/results_20220408&quot;</span>
+<span class="n">pop_densities_1d</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">rep_samples</span><span class="p">,</span> <span class="n">folder</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">rep1_samples</span><span class="p">,</span> <span class="n">rep2_samples</span><span class="p">,</span> <span class="n">rep3_samples</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;results_rep&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]):</span>
+    <span class="n">rep_dir</span> <span class="o">=</span> <span class="n">result_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">folder</span>    
+    <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">rep_samples</span><span class="p">:</span>
+        <span class="n">rgb_file</span> <span class="o">=</span> <span class="n">rep_dir</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">sample</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">sample</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_1_combined_processed.pkl&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rgb_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">rgb_array</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">pop_den</span> <span class="o">=</span> <span class="n">get_pop_density</span><span class="p">(</span><span class="n">slide_sum_y_vol</span><span class="p">(</span><span class="n">rgb_array</span><span class="p">,</span> <span class="n">slide_win</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pop_den</span><span class="p">)):</span>
+            <span class="n">pop_densities_1d</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">folder</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sample</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sample</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">pop_den</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">pop_den</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">pop_den</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">i</span><span class="p">])</span>
+<span class="c1"># pop_den_table = [list(pop_deni) for pop_deni in zip(*pop_densities)]</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pop_den_1d_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">pop_densities_1d</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Rep&quot;</span><span class="p">,</span> <span class="s2">&quot;Carbon&quot;</span><span class="p">,</span> <span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="s2">&quot;R&quot;</span><span class="p">,</span> <span class="s2">&quot;G&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;Radius&quot;</span><span class="p">])</span>
+<span class="n">pop_den_1d_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[&nbsp;]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Rep</th>
+      <th>Carbon</th>
+      <th>Time</th>
+      <th>R</th>
+      <th>G</th>
+      <th>B</th>
+      <th>Radius</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>rep1</td>
+      <td>Nag</td>
+      <td>0</td>
+      <td>0.837857</td>
+      <td>0.000109</td>
+      <td>0.162034</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>rep1</td>
+      <td>Nag</td>
+      <td>0</td>
+      <td>0.837327</td>
+      <td>0.000109</td>
+      <td>0.162564</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>rep1</td>
+      <td>Nag</td>
+      <td>0</td>
+      <td>0.836857</td>
+      <td>0.000109</td>
+      <td>0.163033</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>rep1</td>
+      <td>Nag</td>
+      <td>0</td>
+      <td>0.836393</td>
+      <td>0.000109</td>
+      <td>0.163498</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>rep1</td>
+      <td>Nag</td>
+      <td>0</td>
+      <td>0.835975</td>
+      <td>0.000109</td>
+      <td>0.163916</td>
+      <td>4</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df4plot</span> <span class="o">=</span> <span class="n">pop_den_1d_df</span><span class="p">[(</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Rep&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;rep1&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">((</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1500</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3000</span><span class="p">))]</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter_ternary</span><span class="p">(</span><span class="n">df4plot</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Carbon&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;Radius&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="s2">&quot;results/1Drep1.pdf&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df4plot</span> <span class="o">=</span> <span class="n">pop_den_1d_df</span><span class="p">[(</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Rep&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;rep2&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">((</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1500</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3000</span><span class="p">))]</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter_ternary</span><span class="p">(</span><span class="n">df4plot</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Carbon&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;Radius&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="s2">&quot;results/1Drep2.pdf&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df4plot</span> <span class="o">=</span> <span class="n">pop_den_1d_df</span><span class="p">[(</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Rep&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;rep3&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">((</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1500</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pop_den_1d_df</span><span class="p">[</span><span class="s2">&quot;Radius&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3000</span><span class="p">))]</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter_ternary</span><span class="p">(</span><span class="n">df4plot</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="s1">&#39;R&#39;</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;Carbon&quot;</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;Radius&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="s2">&quot;results/1Drep3.pdf&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+
+
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rgb_file</span> <span class="o">=</span> <span class="s2">&quot;/Users/feng626/workspace/data/SoilSFA/spatial_interactions/results_20220408/results_rep1/11.18.21_21_Nag_1_combined_processed.pkl&quot;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">rgb_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">rgb_array</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="n">rgb_array</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child jp-OutputArea-executeResult">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[&nbsp;]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>(2080, 4869, 3)</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span> 
 </pre></div>
 
      </div>
