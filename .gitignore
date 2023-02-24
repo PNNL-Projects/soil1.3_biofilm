@@ -1,3 +1,10 @@
+tools
+reports
+results
+tags
+test*
+bak
+.DS_store
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
