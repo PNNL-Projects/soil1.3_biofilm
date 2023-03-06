@@ -288,7 +288,7 @@ def shrink(img_ori, win=10):
     for i in range(xw):
         new_imgi = []
         for j in range(yw):
-            new_imgi.append(np.mean(img_ori[i*win:i*win+10,j*win:j*win+10]))
+            new_imgi.append(np.sum(img_ori[i*win:i*win+10,j*win:j*win+10]))
         new_img.append(new_imgi)
     img = np.array(new_img).astype(np.uint16)
     return(img)
@@ -579,7 +579,9 @@ patch_number = 8
 rolling_ball_sizes = [7, 9, 5]
 min_thrs = [32, 48, 128]
 sharping_thr = 0.01
+```
 
+```{python}
 rep7_dir = work_dir + "/Activity_1.3_rep7_10.11.22"
 rep7_img_dirs = [name for name in os.listdir(rep7_dir) if os.path.isdir(os.path.join(rep7_dir, name))] 
 rep7_img_dirs.sort()
@@ -589,6 +591,43 @@ rep7_img_dirs.sort()
 # blank_patch = io.imread(rep7_dir + '/10.12.22_7PM_TP3_Chito5/10.12.22_7PM_TP3_Chito5_1_w2SD DAPI_s7.TIF')
 # blank_patch = blank_patch * 0
 # io.imsave(work_dir + '/rep7_blank_patch.TIF', blank_patch)
+```
+
+```{python}
+import shutil
+mask_dir = work_dir + "/Activity_1.3_rep7_masks"
+Path(mask_dir).mkdir(parents=True, exist_ok=True)
+for dir in rep7_img_dirs:
+    img_dir = rep7_dir + '/' + dir 
+    all_channels_ori = []
+    all_channels = []
+    all_channels_sharp = []
+    all_channels_zoomout = []
+    masked_file = img_dir + '/' + dir + '_1_w1SD BF_stitched_mask.tif'
+    shutil.copy(masked_file, mask_dir)
+```
+
+```{python}
+mask_dir = results_dir + "/results/Activity_1.3_rep7_masks"
+mask_zoomout_dir = results_dir + "/results/Activity_1.3_rep7_masks_zoomout"
+mask_files = os.listdir(mask_dir)
+for mask_file in mask_files:
+    mask = io.imread(mask_dir + '/' + mask_file)
+    mask_small = shrink(mask, win=10)
+    mask_small[mask_small > 0] = 255
+    mask_small = mask_small.astype("uint8")
+    zoomout_file = mask_zoomout_dir + '/' + mask_file
+    io.imsave(zoomout_file, mask_small)
+
+    mask_zoomout = copy.deepcopy(mask_small)
+    mask_zoomout[mask_zoomout > 0] = 1
+    mask_zoomout = np.abs(1 - mask_zoomout)
+    zoomout_csv = mask_zoomout_dir + '/' + mask_file + ".csv"
+    np.savetxt(zoomout_csv, mask_zoomout, delimiter=',')
+```
+
+```{python}
+print(mask_zoomout.dtype)
 ```
 
 ```{python}
@@ -694,9 +733,9 @@ for dir in rep7_img_dirs:
 ```
 
 ```{python}
-min_thrs = [32, 48, 128]
+min_thrs = [32, 48, 256]
 # Replicate 7
-result_dir = results_dir + "/results/20230130_rep7"
+result_dir = results_dir + "/results/20230224_rep7"
 Path(result_dir).mkdir(parents=True, exist_ok=True)
 for dir in rep7_img_dirs:
     # if dir == "10.12.22_7PM_TP3_Chito5":
@@ -769,9 +808,9 @@ for dir in rep7_img_dirs:
     plt.savefig(img_out_small_sharp, dpi=200)
     plt.close()
 
-    plt.figure(figsize=(16,8))
+    plt.figure(figsize=(10,4))
     plt.imshow(combined_img_zoomout)
-    plt.savefig(img_out_small_zoomout, dpi=200)
+    plt.savefig(img_out_small_zoomout, dpi=100)
     plt.close()
 
     pop_den = get_pop_density(slide_sum_y_vol(combined_img_ori, 500))
