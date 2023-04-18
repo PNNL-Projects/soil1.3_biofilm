@@ -1,0 +1,224 @@
+---
+jupyter: python3
+---
+
+```{python}
+import warnings
+warnings.filterwarnings("ignore")
+import math, os, sys, copy, pickle
+import numpy as np
+import scipy as sp
+import pandas as pd
+from skimage import io, filters, restoration
+from skimage import morphology as morph
+import PIL
+from PIL import Image, ImageSequence, ImageEnhance
+# Make images higher resolution and set default size
+import matplotlib
+%matplotlib inline
+matplotlib.rcParams['figure.dpi'] = 200
+matplotlib.rcParams['figure.figsize'] = (6, 6)
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import glob
+import cv2
+import multipagetiff as mtif
+import tifffile
+import ternary
+import plotly.express as px
+```
+
+```{python}
+def get_pop_density(img1d):
+    pop_density = img1d/img1d.sum(axis=1, keepdims=True)
+    return(pop_density)
+def slide_sum_y_vol(img, slide_len = 100):
+    img1d = np.count_nonzero(img, axis=0)
+    img_slides = []
+    for i in range(0, len(img1d) - slide_len):
+        img_slides.append(np.sum(img1d[i:i+slide_len], axis=0))
+    return(np.array(img_slides))
+```
+
+```{python}
+work_dir = "/Users/feng626/workspace/data/SoilSFA/spatial_interactions"
+```
+
+```{python}
+rep1_samples = [['11.18.21_21', 'Nag', 0],
+                ['11.19.21_08', 'Nag', 11],
+                ['11.19.21_18', 'Nag', 21],
+                ['11.20.21_10', 'Nag', 37],
+                ['11.21.21_15', 'Nag', 66],
+                ['11.22.21_15', 'Nag', 90],
+                ['11.18.21_22', 'Chito5', 0],
+                ['11.19.21_09', 'Chito5', 11],
+                ['11.19.21_19', 'Chito5', 21],
+                ['11.20.21_11', 'Chito5', 37],
+                ['11.21.21_16', 'Chito5', 66],
+                ['11.22.21_16', 'Chito5', 90],
+                ['11.18.21_23', 'Chitin', 0],
+                ['11.19.21_10', 'Chitin', 11],
+                ['11.19.21_20', 'Chitin', 21],
+                ['11.20.21_12', 'Chitin', 37],
+                ['11.21.21_17', 'Chitin', 66],
+                ['11.22.21_17', 'Chitin', 90]]
+```
+
+```{python}
+rep2_samples = [["12.13.21_9PM", "Nag", 0],
+                ["12.14.21_8AM", "Nag", 11],
+                ["12.14.21_7PM", "Nag", 22],
+                ["12.15.21_8AM", "Nag", 35],
+                ["12.16.21_3PM", "Nag", 66],
+                ["12.17.21_3PM", "Nag", 90],
+                ["12.13.21_10PM", "Chito5", 0],
+                ["12.14.21_9AM", "Chito5", 11],
+                ["12.14.21_8PM", "Chito5", 22],
+                ["12.15.21_9AM", "Chito5", 35],
+                ["12.16.21_4PM", "Chito5", 66],
+                ["12.17.21_4PM", "Chito5", 90],
+                ["12.13.21_11PM", "Chitin", 0],
+                ["12.14.21_10AM", "Chitin", 11],
+                ["12.14.21_9PM", "Chitin", 22],
+                ["12.15.21_10AM", "Chitin", 35],
+                ["12.16.21_5PM", "Chitin", 66],
+                ["12.17.21_5PM", "Chitin", 90]]
+```
+
+```{python}
+rep3_samples = [["02.07.22_9PM", "Nag", 0],
+                ["02.08.22_8AM", "Nag", 11],
+                ["02.08.22_7PM", "Nag", 22],
+                ["02.09.22_10AM", "Nag", 37],
+                ["02.10.22_3PM", "Nag", 66],
+                ["02.11.22_3PM", "Nag", 90],
+                ["02.07.22_10PM", "Chito5", 0],
+                ["02.08.22_9AM", "Chito5", 11],
+                ["02.08.22_8PM", "Chito5", 22],
+                ["02.09.22_11AM", "Chito5", 37],
+                ["02.10.22_4PM", "Chito5", 66],
+                ["02.11.22_4PM", "Chito5", 90],
+                ["02.07.22_11PM", "Chitin", 0],
+                ["02.08.22_10AM", "Chitin", 11],
+                ["02.08.22_9PM", "Chitin", 22],
+                ["02.09.22_12PM", "Chitin", 37],
+                ["02.10.22_5PM", "Chitin", 66],
+                ["02.11.22_5PM", "Chitin", 90]]
+```
+
+```{python}
+result_dir = work_dir + "/results_20220408"
+pop_densities = []
+for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["results_rep" + str(i+1) for i in range(3)]):
+    rep_dir = result_dir + "/" + folder    
+    for sample in rep_samples:
+        rgb_file = rep_dir + '/' + sample[0] + '_' + sample[1] + "_1_combined_processed.pkl"
+        with open(rgb_file, 'rb') as f:
+            rgb_array = pickle.load(f)
+        pops = rgb_array.sum(axis=(0,1))
+        pop_den = pops / pops.sum()
+        pop_densities.append([folder.split('_')[1], sample[1], sample[2], pop_den[0], pop_den[1], pop_den[2]])
+# pop_den_table = [list(pop_deni) for pop_deni in zip(*pop_densities)]
+```
+
+```{python}
+pop_den_df = pd.DataFrame(pop_densities, columns = ["Rep", "Carbon", "Time", "R", "G", "B"])
+pop_den_df.head()
+```
+
+```{python}
+fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep1"], a='R', b='G', c='B',
+    size="Time", color="Carbon")
+fig.write_image("results/rep1.pdf")
+fig.show()
+```
+
+```{python}
+fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep2"], a='R', b='G', c='B',
+    size="Time", color="Carbon")
+fig.write_image("results/rep2.pdf")
+fig.show()
+```
+
+```{python}
+fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep3"], a='R', b='G', c='B',
+    size="Time", color="Carbon")
+fig.write_image("results/rep3.pdf")
+fig.show()
+```
+
+```{python}
+fig = px.scatter_ternary(pop_den_df, a='R', b='G', c='B',
+    size="Time", color="Carbon", symbol="Rep")
+fig.write_image("results/rep123.pdf")
+fig.show()
+```
+
+```{python}
+slide_win = 1500
+result_dir = work_dir + "/results_20220408"
+pop_densities_1d = []
+for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["results_rep" + str(i+1) for i in range(3)]):
+    rep_dir = result_dir + "/" + folder    
+    for sample in rep_samples:
+        rgb_file = rep_dir + '/' + sample[0] + '_' + sample[1] + "_1_combined_processed.pkl"
+        with open(rgb_file, 'rb') as f:
+            rgb_array = pickle.load(f)
+        pop_den = get_pop_density(slide_sum_y_vol(rgb_array, slide_win))
+        for i in range(len(pop_den)):
+            pop_densities_1d.append([folder.split('_')[1], sample[1], sample[2], pop_den[i,0], pop_den[i,1], pop_den[i,2], i])
+# pop_den_table = [list(pop_deni) for pop_deni in zip(*pop_densities)]
+```
+
+```{python}
+pop_den_1d_df = pd.DataFrame(pop_densities_1d, columns = ["Rep", "Carbon", "Time", "R", "G", "B", "Radius"])
+pop_den_1d_df.head()
+```
+
+```{python}
+pop_den_1d_df["Radius"].max()
+```
+
+```{python}
+df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep1") & ((pop_den_1d_df["Radius"] == 0) | (pop_den_1d_df["Radius"] == 750) | (pop_den_1d_df["Radius"] == 1500) | (pop_den_1d_df["Radius"] == 2250) | (pop_den_1d_df["Radius"] == 3000))]
+fig = px.scatter_ternary(df4plot, a='R', b='G', c='B',
+    size="Time", color="Carbon", symbol="Radius")
+fig.write_image("results/1Drep1.pdf")
+fig.show()
+```
+
+```{python}
+df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep2") & ((pop_den_1d_df["Radius"] == 0) | (pop_den_1d_df["Radius"] == 750) | (pop_den_1d_df["Radius"] == 1500) | (pop_den_1d_df["Radius"] == 2250) | (pop_den_1d_df["Radius"] == 3000))]
+fig = px.scatter_ternary(df4plot, a='R', b='G', c='B',
+    size="Time", color="Carbon", symbol="Radius")
+fig.write_image("results/1Drep2.pdf")
+fig.show()
+```
+
+```{python}
+df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep3") & ((pop_den_1d_df["Radius"] == 0) | (pop_den_1d_df["Radius"] == 750) | (pop_den_1d_df["Radius"] == 1500) | (pop_den_1d_df["Radius"] == 2250) | (pop_den_1d_df["Radius"] == 3000))]
+fig = px.scatter_ternary(df4plot, a='R', b='G', c='B',
+    size="Time", color="Carbon", symbol="Radius")
+fig.write_image("results/1Drep3.pdf")
+fig.show()
+```
+
+```{python}
+# df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep3") & ((pop_den_1d_df["Radius"] == 0) | (pop_den_1d_df["Radius"] == 750) | (pop_den_1d_df["Radius"] == 1500) | (pop_den_1d_df["Radius"] == 2250) | (pop_den_1d_df["Radius"] == 3000))]
+df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep3") & (pop_den_1d_df["Carbon"] == "Nag") & (pop_den_1d_df["Radius"] % 500 == 0)]
+fig = px.line_ternary(df4plot, a='R', b='G', c='B',
+    line_group="Time", color="Radius")
+fig.write_image("results/1Drep3_alt.pdf")
+fig.show()
+```
+
+```{python}
+rgb_file = "/Users/feng626/workspace/data/SoilSFA/spatial_interactions/results_20220408/results_rep1/11.18.21_21_Nag_1_combined_processed.pkl"
+with open(rgb_file, 'rb') as f:
+    rgb_array = pickle.load(f)
+rgb_array.shape
+```
+
+
+
