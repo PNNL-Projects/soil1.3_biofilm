@@ -24,7 +24,6 @@ import glob
 import cv2
 import multipagetiff as mtif
 import tifffile
-import ternary
 import plotly.express as px
 import plotly.graph_objs as go
 ```
