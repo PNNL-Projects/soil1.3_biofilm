@@ -26,6 +26,7 @@ import multipagetiff as mtif
 import tifffile
 import ternary
 import plotly.express as px
+import plotly.graph_objs as go
 ```
 
 ```{python}
@@ -41,7 +42,7 @@ def slide_sum_y_vol(img, slide_len = 100):
 ```
 
 ```{python}
-work_dir = "/Users/feng626/workspace/data/SoilSFA/spatial_interactions"
+work_dir = "/Users/feng626/workspace/data/SoilSFA/spatial_interactions/"
 ```
 
 ```{python}
@@ -108,10 +109,10 @@ rep3_samples = [["02.07.22_9PM", "Nag", 0],
 ```
 
 ```{python}
-result_dir = work_dir + "/results_20220408"
+result_dir = work_dir + "results_20220408/"
 pop_densities = []
 for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["results_rep" + str(i+1) for i in range(3)]):
-    rep_dir = result_dir + "/" + folder    
+    rep_dir = result_dir + folder    
     for sample in rep_samples:
         rgb_file = rep_dir + '/' + sample[0] + '_' + sample[1] + "_1_combined_processed.pkl"
         with open(rgb_file, 'rb') as f:
@@ -123,42 +124,55 @@ for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["res
 ```
 
 ```{python}
-pop_den_df = pd.DataFrame(pop_densities, columns = ["Rep", "Carbon", "Time", "R", "G", "B"])
+rgb_array.shape
+```
+
+```{python}
+pop_den_df = pd.DataFrame(pop_densities, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp."])
 pop_den_df.head()
 ```
 
 ```{python}
-fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep1"], a='R', b='G', c='B',
-    size="Time", color="Carbon")
-fig.write_image("results/rep1.pdf")
+fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep1"], 
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         size="Time", color="Carbon")
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+# fig.write_image("results/rep1.pdf")
 fig.show()
 ```
 
 ```{python}
-fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep2"], a='R', b='G', c='B',
-    size="Time", color="Carbon")
-fig.write_image("results/rep2.pdf")
+fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep2"],
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         size="Time", color="Carbon")
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+# fig.write_image("results/rep2.pdf")
 fig.show()
 ```
 
 ```{python}
-fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep3"], a='R', b='G', c='B',
-    size="Time", color="Carbon")
-fig.write_image("results/rep3.pdf")
+fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep3"], 
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         size="Time", color="Carbon")
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+# fig.write_image("results/rep3.pdf")
 fig.show()
 ```
 
 ```{python}
-fig = px.scatter_ternary(pop_den_df, a='R', b='G', c='B',
-    size="Time", color="Carbon", symbol="Rep")
-fig.write_image("results/rep123.pdf")
+fig = px.scatter_ternary(pop_den_df, 
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         size="Time", color="Carbon", symbol="Rep")
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+# fig.write_image("results/rep123.pdf")
 fig.show()
 ```
 
 ```{python}
-slide_win = 1500
+slide_win = 100
 result_dir = work_dir + "/results_20220408"
 pop_densities_1d = []
+delta_pop_densities_1d = []
 for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["results_rep" + str(i+1) for i in range(3)]):
     rep_dir = result_dir + "/" + folder    
     for sample in rep_samples:
@@ -168,13 +182,97 @@ for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["res
         pop_den = get_pop_density(slide_sum_y_vol(rgb_array, slide_win))
         for i in range(len(pop_den)):
             pop_densities_1d.append([folder.split('_')[1], sample[1], sample[2], pop_den[i,0], pop_den[i,1], pop_den[i,2], i])
+            if i > 0:
+                delta_pop_densities_1d.append([folder.split('_')[1], sample[1], sample[2], pop_den[i,0] - pop_den[i-1,0], pop_den[i,1] - pop_den[i-1,1], pop_den[i,2] - pop_den[i-1,2], i, 1])
+            if i > 10:
+                delta_pop_densities_1d.append([folder.split('_')[1], sample[1], sample[2], pop_den[i,0] - pop_den[i-1,0], pop_den[i,1] - pop_den[i-1,1], pop_den[i,2] - pop_den[i-1,2], i, 10])
+            if i > 100:
+                delta_pop_densities_1d.append([folder.split('_')[1], sample[1], sample[2], pop_den[i,0] - pop_den[i-1,0], pop_den[i,1] - pop_den[i-1,1], pop_den[i,2] - pop_den[i-1,2], i, 100])
 # pop_den_table = [list(pop_deni) for pop_deni in zip(*pop_densities)]
 ```
 
 ```{python}
-pop_den_1d_df = pd.DataFrame(pop_densities_1d, columns = ["Rep", "Carbon", "Time", "R", "G", "B", "Radius"])
+pop_den_1d_df = pd.DataFrame(pop_densities_1d, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Radius"])
 pop_den_1d_df.head()
 ```
+
+```{python}
+delta_pop_den_1d_df = pd.DataFrame(delta_pop_densities_1d, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Radius", "Step"])
+delta_pop_den_1d_df.head()
+```
+
+```{python}
+set(pop_den_1d_df["Time"])
+```
+
+```{python}
+df = pop_den_1d_df.copy()
+dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
+fig = px.line(dft, x='Radius', y=['V. paradoxus', 'S. fribergensis', 'Rhodococcus spp.'], title='1D with at 66h')
+fig.show()
+```
+
+```{python}
+df = pop_den_1d_df.copy()
+dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
+fig = px.line_3d(dft, x='V. paradoxus', y='S. fribergensis', z='Rhodococcus spp.', title='1D with at 66h')
+fig.show()
+```
+
+```{python}
+df = pop_den_1d_df.copy()
+dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
+fig = px.scatter_ternary(dft,
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         color="Radius")
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+fig.show()
+```
+
+```{python}
+df = pop_den_1d_df.copy()
+# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
+fig = px.scatter_ternary(dft,
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         color="Radius")
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+fig.show()
+```
+
+```{python}
+df = delta_pop_den_1d_df.copy()
+dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")
+         & (df["Step"] == 10)
+         ].copy()
+# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
+fig = px.scatter_3d(dft.loc[(df[['V. paradoxus', 'S. fribergensis', 'Rhodococcus spp.']] != 0).all(axis=1)], x='V. paradoxus', y='S. fribergensis', z='Rhodococcus spp.', title='1D with at 66h')
+fig.update_traces(
+    marker=dict(size=2)
+)
+fig.show()
+```
+
+```{python}
+fig = px.scatter(dft.loc[(df[['V. paradoxus', 'S. fribergensis', 'Rhodococcus spp.']] != 0).all(axis=1)], x='V. paradoxus', y='S. fribergensis', title='1D with at 66h')
+fig.update_traces(
+    marker=dict(size=2)
+)
+fig.show()
+```
+
+```{python}
+fig = px.scatter(dft.loc[(df[['V. paradoxus', 'S. fribergensis', 'Rhodococcus spp.']] != 0).all(axis=1)], x='Rhodococcus spp.', y='S. fribergensis', title='1D with at 66h')
+fig.update_traces(
+    marker=dict(size=2)
+)
+fig.show()
+```
+
+
 
 ```{python}
 pop_den_1d_df["Radius"].max()
@@ -182,24 +280,30 @@ pop_den_1d_df["Radius"].max()
 
 ```{python}
 df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep1") & ((pop_den_1d_df["Radius"] == 0) | (pop_den_1d_df["Radius"] == 750) | (pop_den_1d_df["Radius"] == 1500) | (pop_den_1d_df["Radius"] == 2250) | (pop_den_1d_df["Radius"] == 3000))]
-fig = px.scatter_ternary(df4plot, a='R', b='G', c='B',
-    size="Time", color="Carbon", symbol="Radius")
+fig = px.scatter_ternary(df4plot,
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         size="Time", color="Carbon", symbol="Radius")
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.write_image("results/1Drep1.pdf")
 fig.show()
 ```
 
 ```{python}
 df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep2") & ((pop_den_1d_df["Radius"] == 0) | (pop_den_1d_df["Radius"] == 750) | (pop_den_1d_df["Radius"] == 1500) | (pop_den_1d_df["Radius"] == 2250) | (pop_den_1d_df["Radius"] == 3000))]
-fig = px.scatter_ternary(df4plot, a='R', b='G', c='B',
-    size="Time", color="Carbon", symbol="Radius")
+fig = px.scatter_ternary(df4plot, 
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         size="Time", color="Carbon", symbol="Radius")
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.write_image("results/1Drep2.pdf")
 fig.show()
 ```
 
 ```{python}
 df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep3") & ((pop_den_1d_df["Radius"] == 0) | (pop_den_1d_df["Radius"] == 750) | (pop_den_1d_df["Radius"] == 1500) | (pop_den_1d_df["Radius"] == 2250) | (pop_den_1d_df["Radius"] == 3000))]
-fig = px.scatter_ternary(df4plot, a='R', b='G', c='B',
-    size="Time", color="Carbon", symbol="Radius")
+fig = px.scatter_ternary(df4plot, 
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         size="Time", color="Carbon", symbol="Radius")
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.write_image("results/1Drep3.pdf")
 fig.show()
 ```
@@ -207,8 +311,10 @@ fig.show()
 ```{python}
 # df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep3") & ((pop_den_1d_df["Radius"] == 0) | (pop_den_1d_df["Radius"] == 750) | (pop_den_1d_df["Radius"] == 1500) | (pop_den_1d_df["Radius"] == 2250) | (pop_den_1d_df["Radius"] == 3000))]
 df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep3") & (pop_den_1d_df["Carbon"] == "Nag") & (pop_den_1d_df["Radius"] % 500 == 0)]
-fig = px.line_ternary(df4plot, a='R', b='G', c='B',
-    line_group="Time", color="Radius")
+fig = px.line_ternary(df4plot, 
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         line_group="Time", color="Radius")
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.write_image("results/1Drep3_alt.pdf")
 fig.show()
 ```
@@ -219,6 +325,5 @@ with open(rgb_file, 'rb') as f:
     rgb_array = pickle.load(f)
 rgb_array.shape
 ```
-
 
 
