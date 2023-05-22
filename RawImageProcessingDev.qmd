@@ -1,4 +1,5 @@
 ---
+title: Rep 1-3
 jupyter: python3
 ---
 
@@ -294,7 +295,7 @@ def shrink(img_ori, win=10):
     return(img)
 ```
 
-# Rep 1-3
+
 
 ```{python}
 work_dir = "/Users/feng626/workspace/data/SoilSFA/spatial_interactions"
@@ -397,7 +398,6 @@ for carbon in ["Chitin", "Chito5", "Nag"]:
         plt.savefig(plot_out_sharp, dpi=200)
         # plt.show()
         plt.close()
-    
 ```
 
 ```{python}
@@ -481,7 +481,6 @@ for dir in rep2_img_dirs:
     plt.savefig(plot_out_sharp, dpi=200)
     # plt.show()
     plt.close()
-    
 ```
 
 ```{python}
@@ -567,7 +566,6 @@ for dir in rep3_img_dirs:
     plt.savefig(plot_out_sharp, dpi=200)
     # plt.show()
     plt.close()
-    
 ```
 
 # Rep 7
@@ -729,7 +727,6 @@ for dir in rep7_img_dirs:
     plt.savefig(plot_out_sharp, dpi=200)
     # plt.show()
     plt.close()
-    
 ```
 
 ```{python}
@@ -832,7 +829,5 @@ for dir in rep7_img_dirs:
     plt.savefig(plot_out_sharp, dpi=200)
     # plt.show()
     plt.close()
-    
 ```
-
 

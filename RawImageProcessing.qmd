@@ -368,7 +368,6 @@ for carbon in ["Chitin", "Chito5", "Nag"]:
         plt.savefig(plot_out_sharp, dpi=200)
         # plt.show()
         plt.close()
-    
 ```
 
 ```{python}
@@ -452,7 +451,6 @@ for dir in rep2_img_dirs:
     plt.savefig(plot_out_sharp, dpi=200)
     # plt.show()
     plt.close()
-    
 ```
 
 ```{python}
@@ -538,7 +536,5 @@ for dir in rep3_img_dirs:
     plt.savefig(plot_out_sharp, dpi=200)
     # plt.show()
     plt.close()
-    
 ```
-
 
