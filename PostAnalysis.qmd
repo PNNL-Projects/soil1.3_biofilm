@@ -26,6 +26,7 @@ import multipagetiff as mtif
 import tifffile
 import plotly.express as px
 import plotly.graph_objs as go
+import seaborn as sns
 ```
 
 ```{python}
@@ -170,6 +171,8 @@ fig.show()
 ```{python}
 slide_win = 100
 result_dir = work_dir + "/results_20220408"
+pop_volumes_1d = []
+delta_pop_volumes_1d = []
 pop_densities_1d = []
 delta_pop_densities_1d = []
 for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["results_rep" + str(i+1) for i in range(3)]):
@@ -178,6 +181,11 @@ for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["res
         rgb_file = rep_dir + '/' + sample[0] + '_' + sample[1] + "_1_combined_processed.pkl"
         with open(rgb_file, 'rb') as f:
             rgb_array = pickle.load(f)
+        pop_vol = slide_sum_y_vol(rgb_array, slide_len = 1)
+        for i in range(len(pop_vol)):
+            pop_volumes_1d.append([folder.split('_')[1], sample[1], sample[2], pop_vol[i,0], pop_vol[i,1], pop_vol[i,2], i])
+            if i > 0:
+                delta_pop_volumes_1d.append([folder.split('_')[1], sample[1], sample[2], pop_vol[i,0] - pop_vol[i-1,0], pop_vol[i,1] - pop_vol[i-1,1], pop_vol[i,2] - pop_vol[i-1,2], i, 1])
         pop_den = get_pop_density(slide_sum_y_vol(rgb_array, slide_win))
         for i in range(len(pop_den)):
             pop_densities_1d.append([folder.split('_')[1], sample[1], sample[2], pop_den[i,0], pop_den[i,1], pop_den[i,2], i])
