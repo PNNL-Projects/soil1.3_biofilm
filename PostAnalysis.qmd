@@ -363,13 +363,13 @@ fig.show()
 
 ```{python}
 # df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep3") & ((pop_den_1d_df["Radius"] == 0) | (pop_den_1d_df["Radius"] == 750) | (pop_den_1d_df["Radius"] == 1500) | (pop_den_1d_df["Radius"] == 2250) | (pop_den_1d_df["Radius"] == 3000))]
-df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep3") & (pop_den_1d_df["Carbon"] == "Nag") & (pop_den_1d_df["Radius"] % 500 == 0)]
-fig = px.line_ternary(df4plot, 
-                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
-                         line_group="Time", color="Radius")
-fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
-fig.write_image("results/1Drep3_alt.pdf")
-fig.show()
+# df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep3") & (pop_den_1d_df["Carbon"] == "Nag") & (pop_den_1d_df["Radius"] % 500 == 0)]
+# fig = px.line_ternary(df4plot, 
+#                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+#                          line_group="Time", color="Radius")
+# fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+# fig.write_image("results/1Drep3_alt.pdf")
+# fig.show()
 ```
 
 ```{python}
