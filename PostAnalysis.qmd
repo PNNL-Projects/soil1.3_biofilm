@@ -48,19 +48,22 @@ work_dir = "/Users/feng626/workspace/data/SoilSFA/spatial_interactions/"
 ```{python}
 rep1_samples = [['11.18.21_21', 'Nag', 0],
                 ['11.19.21_08', 'Nag', 11],
-                ['11.19.21_18', 'Nag', 21],
+                # ['11.19.21_18', 'Nag', 21],
+                ['11.19.21_18', 'Nag', 22],
                 ['11.20.21_10', 'Nag', 37],
                 ['11.21.21_15', 'Nag', 66],
                 ['11.22.21_15', 'Nag', 90],
                 ['11.18.21_22', 'Chito5', 0],
                 ['11.19.21_09', 'Chito5', 11],
-                ['11.19.21_19', 'Chito5', 21],
+                # ['11.19.21_19', 'Chito5', 21],
+                ['11.19.21_19', 'Chito5', 22],
                 ['11.20.21_11', 'Chito5', 37],
                 ['11.21.21_16', 'Chito5', 66],
                 ['11.22.21_16', 'Chito5', 90],
                 ['11.18.21_23', 'Chitin', 0],
                 ['11.19.21_10', 'Chitin', 11],
-                ['11.19.21_20', 'Chitin', 21],
+                # ['11.19.21_20', 'Chitin', 21],
+                ['11.19.21_20', 'Chitin', 22],
                 ['11.20.21_12', 'Chitin', 37],
                 ['11.21.21_17', 'Chitin', 66],
                 ['11.22.21_17', 'Chitin', 90]]
@@ -70,19 +73,22 @@ rep1_samples = [['11.18.21_21', 'Nag', 0],
 rep2_samples = [["12.13.21_9PM", "Nag", 0],
                 ["12.14.21_8AM", "Nag", 11],
                 ["12.14.21_7PM", "Nag", 22],
-                ["12.15.21_8AM", "Nag", 35],
+                # ["12.15.21_8AM", "Nag", 35],
+                ["12.15.21_8AM", "Nag", 37],
                 ["12.16.21_3PM", "Nag", 66],
                 ["12.17.21_3PM", "Nag", 90],
                 ["12.13.21_10PM", "Chito5", 0],
                 ["12.14.21_9AM", "Chito5", 11],
                 ["12.14.21_8PM", "Chito5", 22],
-                ["12.15.21_9AM", "Chito5", 35],
+                # ["12.15.21_9AM", "Chito5", 35],
+                ["12.15.21_9AM", "Chito5", 37],
                 ["12.16.21_4PM", "Chito5", 66],
                 ["12.17.21_4PM", "Chito5", 90],
                 ["12.13.21_11PM", "Chitin", 0],
                 ["12.14.21_10AM", "Chitin", 11],
                 ["12.14.21_9PM", "Chitin", 22],
-                ["12.15.21_10AM", "Chitin", 35],
+                # ["12.15.21_10AM", "Chitin", 35],
+                ["12.15.21_10AM", "Chitin", 37],
                 ["12.16.21_5PM", "Chitin", 66],
                 ["12.17.21_5PM", "Chitin", 90]]
 ```
@@ -109,9 +115,9 @@ rep3_samples = [["02.07.22_9PM", "Nag", 0],
 ```
 
 ```{python}
-result_dir = work_dir + "results_20220408/"
+result_dir = work_dir + "20220408/"
 pop_densities = []
-for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["results_rep" + str(i+1) for i in range(3)]):
+for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["Activity_1.3_rep" + str(i+1) for i in range(3)]):
     rep_dir = result_dir + folder    
     for sample in rep_samples:
         rgb_file = rep_dir + '/' + sample[0] + '_' + sample[1] + "_1_combined_processed.pkl"
@@ -119,7 +125,7 @@ for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["res
             rgb_array = pickle.load(f)
         pops = rgb_array.sum(axis=(0,1))
         pop_den = pops / pops.sum()
-        pop_densities.append([folder.split('_')[1], sample[1], sample[2], pop_den[0], pop_den[1], pop_den[2]])
+        pop_densities.append([folder.split('_')[2], sample[1], sample[2], pop_den[0], pop_den[1], pop_den[2]])
 # pop_den_table = [list(pop_deni) for pop_deni in zip(*pop_densities)]
 ```
 
@@ -137,7 +143,7 @@ fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep1"],
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
-# fig.write_image("results/rep1.pdf")
+fig.write_image(result_dir + "rep1.pdf")
 fig.show()
 ```
 
@@ -146,7 +152,7 @@ fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep2"],
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
-# fig.write_image("results/rep2.pdf")
+fig.write_image(result_dir + "rep2.pdf")
 fig.show()
 ```
 
@@ -155,7 +161,7 @@ fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep3"],
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
-# fig.write_image("results/rep3.pdf")
+fig.write_image(result_dir + "rep3.pdf")
 fig.show()
 ```
 
@@ -164,77 +170,117 @@ fig = px.scatter_ternary(pop_den_df,
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon", symbol="Rep")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
-# fig.write_image("results/rep123.pdf")
+fig.write_image(result_dir + "rep123.pdf")
 fig.show()
 ```
 
 ```{python}
 slide_win = 100
-result_dir = work_dir + "/results_20220408"
+result_dir = work_dir + "20220408/"
+mask_volumes_1d = []
 pop_volumes_1d = []
 delta_pop_volumes_1d = []
+mask_density_1d = []
 pop_densities_1d = []
 delta_pop_densities_1d = []
-for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["results_rep" + str(i+1) for i in range(3)]):
-    rep_dir = result_dir + "/" + folder    
+for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["Activity_1.3_rep" + str(i+1) for i in range(3)]):
+    mask_dir = work_dir + folder + "_masks/"
+    rep_dir = result_dir + folder + '/'    
     for sample in rep_samples:
-        rgb_file = rep_dir + '/' + sample[0] + '_' + sample[1] + "_1_combined_processed.pkl"
+        mask_file = mask_dir + sample[0] + '_' + sample[1] + "_1_w1SD BF_stitched_mask.tif"
+        mask_array = io.imread(mask_file)
+        mask_array[mask_array > 0] = 1
+        mask_array = np.abs(mask_array - 1)
+        rgb_file = rep_dir + sample[0] + '_' + sample[1] + "_1_combined_processed.pkl"
         with open(rgb_file, 'rb') as f:
             rgb_array = pickle.load(f)
-        pop_vol = slide_sum_y_vol(rgb_array, slide_len = 1)
+        mask_vol = slide_sum_y_vol(mask_array, slide_win)
+        pop_vol = slide_sum_y_vol(rgb_array, slide_win)
         for i in range(len(pop_vol)):
-            pop_volumes_1d.append([folder.split('_')[1], sample[1], sample[2], pop_vol[i,0], pop_vol[i,1], pop_vol[i,2], i])
+            pop_volumes_1d.append([folder.split('_')[2], sample[1], sample[2], pop_vol[i,0], pop_vol[i,1], pop_vol[i,2], i + slide_win//2, mask_vol[i]])
             if i > 0:
-                delta_pop_volumes_1d.append([folder.split('_')[1], sample[1], sample[2], pop_vol[i,0] - pop_vol[i-1,0], pop_vol[i,1] - pop_vol[i-1,1], pop_vol[i,2] - pop_vol[i-1,2], i, 1])
+                delta_pop_volumes_1d.append([folder.split('_')[2], sample[1], sample[2], pop_vol[i,0] - pop_vol[i-1,0], pop_vol[i,1] - pop_vol[i-1,1], pop_vol[i,2] - pop_vol[i-1,2], i + slide_win//2, 1, mask_vol[i] - mask_vol[i-1]])
+            if i >= 10:
+                delta_pop_volumes_1d.append([folder.split('_')[2], sample[1], sample[2], pop_vol[i,0] - pop_vol[i-10,0], pop_vol[i,1] - pop_vol[i-10,1], pop_vol[i,2] - pop_vol[i-10,2], i + slide_win//2, 10, mask_vol[i] - mask_vol[i-10]])
+            if i >= 100:
+                delta_pop_volumes_1d.append([folder.split('_')[2], sample[1], sample[2], pop_vol[i,0] - pop_vol[i-100,0], pop_vol[i,1] - pop_vol[i-100,1], pop_vol[i,2] - pop_vol[i-100,2], i + slide_win//2, 100, mask_vol[i] - mask_vol[i-100]])
         pop_den = get_pop_density(slide_sum_y_vol(rgb_array, slide_win))
         for i in range(len(pop_den)):
-            pop_densities_1d.append([folder.split('_')[1], sample[1], sample[2], pop_den[i,0], pop_den[i,1], pop_den[i,2], i])
+            pop_densities_1d.append([folder.split('_')[2], sample[1], sample[2], pop_den[i,0], pop_den[i,1], pop_den[i,2], i + slide_win//2, mask_vol[i]])
             if i > 0:
-                delta_pop_densities_1d.append([folder.split('_')[1], sample[1], sample[2], pop_den[i,0] - pop_den[i-1,0], pop_den[i,1] - pop_den[i-1,1], pop_den[i,2] - pop_den[i-1,2], i, 1])
-            if i > 10:
-                delta_pop_densities_1d.append([folder.split('_')[1], sample[1], sample[2], pop_den[i,0] - pop_den[i-1,0], pop_den[i,1] - pop_den[i-1,1], pop_den[i,2] - pop_den[i-1,2], i, 10])
-            if i > 100:
-                delta_pop_densities_1d.append([folder.split('_')[1], sample[1], sample[2], pop_den[i,0] - pop_den[i-1,0], pop_den[i,1] - pop_den[i-1,1], pop_den[i,2] - pop_den[i-1,2], i, 100])
+                delta_pop_densities_1d.append([folder.split('_')[2], sample[1], sample[2], pop_den[i,0] - pop_den[i-1,0], pop_den[i,1] - pop_den[i-1,1], pop_den[i,2] - pop_den[i-1,2], i + slide_win//2, 1, mask_vol[i] - mask_vol[i-1]])
+            if i >= 10:
+                delta_pop_densities_1d.append([folder.split('_')[2], sample[1], sample[2], pop_den[i,0] - pop_den[i-10,0], pop_den[i,1] - pop_den[i-10,1], pop_den[i,2] - pop_den[i-10,2], i + slide_win//2, 10, mask_vol[i] - mask_vol[i-10]])
+            if i >= 100:
+                delta_pop_densities_1d.append([folder.split('_')[2], sample[1], sample[2], pop_den[i,0] - pop_den[i-100,0], pop_den[i,1] - pop_den[i-100,1], pop_den[i,2] - pop_den[i-100,2], i + slide_win//2, 100, mask_vol[i] - mask_vol[i-100]])
 # pop_den_table = [list(pop_deni) for pop_deni in zip(*pop_densities)]
 ```
 
 ```{python}
-pop_den_1d_df = pd.DataFrame(pop_densities_1d, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Radius"])
-pop_den_1d_df.head()
-```
+pop_vol_1d_df = pd.DataFrame(pop_volumes_1d, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Radius", "Volume"])
+pop_vol_1d_df["Relative Volume"] = pop_vol_1d_df["Volume"] / pop_vol_1d_df["Volume"].max()
+pop_vol_1d_df["V. paradoxus / Volume"] = pop_vol_1d_df["V. paradoxus"] / pop_vol_1d_df["Volume"]
+pop_vol_1d_df["S. fribergensis / Volume"] = pop_vol_1d_df["S. fribergensis"] / pop_vol_1d_df["Volume"]
+pop_vol_1d_df["Rhodococcus spp. / Volume"] = pop_vol_1d_df["Rhodococcus spp."] / pop_vol_1d_df["Volume"]
+pop_vol_1d_df.to_pickle(result_dir + "pop_vol_1d_df.pkl")
+delta_pop_vol_1d_df = pd.DataFrame(delta_pop_volumes_1d, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Radius", "Step", "Volume"])
+delta_pop_vol_1d_df.to_pickle(result_dir + "delta_pop_vol_1d_df.pkl")
 
-```{python}
-delta_pop_den_1d_df = pd.DataFrame(delta_pop_densities_1d, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Radius", "Step"])
-delta_pop_den_1d_df.head()
-```
 
-```{python}
-set(pop_den_1d_df["Time"])
+pop_den_1d_df = pd.DataFrame(pop_densities_1d, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Radius", "Volume"])
+pop_den_1d_df["Relative Volume"] = pop_den_1d_df["Volume"] / pop_den_1d_df["Volume"].max()
+# pop_den_1d_df["V. paradoxus / Volume"] = pop_den_1d_df["V. paradoxus"] / pop_den_1d_df["Volume"]
+# pop_den_1d_df["S. fribergensis / Volume"] = pop_den_1d_df["S. fribergensis"] / pop_den_1d_df["Volume"]
+# pop_den_1d_df["Rhodococcus spp. / Volume"] = pop_den_1d_df["Rhodococcus spp."] / pop_den_1d_df["Volume"]
+pop_den_1d_df.to_pickle(result_dir + "pop_den_1d_df.pkl")
+delta_pop_den_1d_df = pd.DataFrame(delta_pop_densities_1d, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Radius", "Step", "Volume"])
+delta_pop_den_1d_df.to_pickle(result_dir + "delta_pop_den_1d_df.pkl")
 ```
 
 ```{python}
 df = pop_den_1d_df.copy()
 dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
 # dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
-fig = px.line(dft, x='Radius', y=['V. paradoxus', 'S. fribergensis', 'Rhodococcus spp.'], title='1D with at 66h')
+fig = px.line(dft, x='Radius', y=['V. paradoxus', 'S. fribergensis', 'Rhodococcus spp.', 'Relative Volume'], title='1D with Nag at 66h')
+fig.write_image(result_dir + "1D_with_Nag_at_66h.pdf")
 fig.show()
 ```
 
 ```{python}
 df = pop_den_1d_df.copy()
-dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
-fig = px.line_3d(dft, x='V. paradoxus', y='S. fribergensis', z='Rhodococcus spp.', title='1D with at 66h')
+dft = df[(df["Carbon"] == "Chito5") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# dft = df[(df["Carbon"] == "Chito5") & (df["Time"] == 66)].copy()
+fig = px.line(dft, x='Radius', y=['V. paradoxus', 'S. fribergensis', 'Rhodococcus spp.', 'Relative Volume'], title='1D with Chito5 at 66h')
+fig.write_image(result_dir + "1D_with_Chito5_at_66h.pdf")
 fig.show()
 ```
 
 ```{python}
 df = pop_den_1d_df.copy()
-dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+dft = df[(df["Carbon"] == "Chitin") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# dft = df[(df["Carbon"] == "Chitin") & (df["Time"] == 66)].copy()
+fig = px.line(dft, x='Radius', y=['V. paradoxus', 'S. fribergensis', 'Rhodococcus spp.', 'Relative Volume'], title='1D with Chitin at 66h')
+fig.write_image(result_dir + "1D_with_Chitin_at_66h.pdf")
+fig.show()
+```
+
+```{python}
+# df = pop_den_1d_df.copy()
+# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# # dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
+# fig = px.line_3d(dft, x='V. paradoxus', y='S. fribergensis', z='Rhodococcus spp.', title='1D with at 66h')
+# fig.show()
+```
+
+```{python}
+df = pop_den_1d_df.copy()
+# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
 # dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
+# dft = df[(df["Carbon"] == "Nag")].copy()
+dft = df.copy()
 fig = px.scatter_ternary(dft,
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
-                         color="Radius")
+                         color="Relative Volume")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.show()
 ```
@@ -327,10 +373,7 @@ fig.show()
 ```
 
 ```{python}
-rgb_file = "/Users/feng626/workspace/data/SoilSFA/spatial_interactions/results_20220408/results_rep1/11.18.21_21_Nag_1_combined_processed.pkl"
-with open(rgb_file, 'rb') as f:
-    rgb_array = pickle.load(f)
-rgb_array.shape
+
 ```
 
 

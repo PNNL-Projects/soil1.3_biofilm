@@ -629,7 +629,7 @@ print(mask_zoomout.dtype)
 
 ```{python}
 # Replicate 7
-result_dir = results_dir + "/results/20230224_rep7"
+result_dir = results_dir + "/results/20230224/Activity_1.3_rep7"
 Path(result_dir).mkdir(parents=True, exist_ok=True)
 for dir in rep7_img_dirs:
     # if dir == "10.12.22_7PM_TP3_Chito5":
@@ -731,7 +731,7 @@ for dir in rep7_img_dirs:
 ```{python}
 min_thrs = [32, 48, 256]
 # Replicate 7
-result_dir = results_dir + "/results/20230224_rep7"
+result_dir = results_dir + "/results/20230224/Activity_1.3_rep7"
 Path(result_dir).mkdir(parents=True, exist_ok=True)
 for dir in rep7_img_dirs:
     # if dir == "10.12.22_7PM_TP3_Chito5":
