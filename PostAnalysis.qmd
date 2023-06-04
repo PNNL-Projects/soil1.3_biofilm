@@ -42,7 +42,7 @@ def slide_sum_y_vol(img, slide_len = 100):
 ```
 
 ```{python}
-work_dir = "/Users/feng626/workspace/data/SoilSFA/spatial_interactions/"
+work_dir = "/Users/feng626/workspace/data/soil1.3/spatial_interactions/"
 result_dir = work_dir + "20220408/"
 ```
 
@@ -135,9 +135,7 @@ for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["Act
         pop_den = pops / pops.sum()
         pop_densities.append([folder.split('_')[2], sample[1], sample[2], pop_den[0], pop_den[1], pop_den[2], mask_vol])
 # pop_den_table = [list(pop_deni) for pop_deni in zip(*pop_densities)]
-```
 
-```{python}
 pop_den_df = pd.DataFrame(pop_densities, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Volume"])
 pop_vol_df = pd.DataFrame(pop_volumes, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Volume"])
 pop_vol_df["Total"] = pop_vol_df["V. paradoxus"] + pop_vol_df["S. fribergensis"] + pop_vol_df["Rhodococcus spp."]
@@ -149,6 +147,14 @@ pop_den_df.to_pickle(result_dir + "pop_densities.pkl")
 pop_vol_df.to_pickle(result_dir + "pop_volumes.pkl")
 ```
 
+```{python}
+pop_den_df = pd.read_pickle(result_dir + "pop_densities.pkl")
+pop_vol_df = pd.read_pickle(result_dir + "pop_volumes.pkl")
+```
+
+```{python}
+
+```
 ```{python}
 fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep1"], 
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
