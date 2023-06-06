@@ -156,49 +156,60 @@ pop_vol_df = pd.read_pickle(result_dir + "pop_volumes.pkl")
 
 ```
 ```{python}
-fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep1"], 
+df = pop_den_df.copy()
+df["Time"] = (df["Time"]) / 5 + 2
+fig = px.scatter_ternary(df[pop_den_df["Rep"] == "rep1"], 
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.write_image(result_dir + "rep1.pdf")
-# fig.show()
+fig.show()
 ```
 
 ```{python}
-fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep2"],
+df = pop_den_df.copy()
+df["Time"] = (df["Time"]) / 5 + 2
+fig = px.scatter_ternary(df[pop_den_df["Rep"] == "rep2"],
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.write_image(result_dir + "rep2.pdf")
-# fig.show()
+fig.show()
 ```
 
 ```{python}
-fig = px.scatter_ternary(pop_den_df[pop_den_df["Rep"] == "rep3"], 
+df = pop_den_df.copy()
+df["Time"] = (df["Time"]) / 5 + 2
+fig = px.scatter_ternary(df[pop_den_df["Rep"] == "rep3"], 
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.write_image(result_dir + "rep3.pdf")
-# fig.show()
+fig.show()
 ```
 
 ```{python}
-fig = px.scatter_ternary(pop_den_df, 
+df = pop_den_df.copy()
+df["Time"] = (df["Time"]) / 5 + 2
+fig = px.scatter_ternary(df, 
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon", symbol="Rep")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.write_image(result_dir + "rep123.pdf")
-# fig.show()
+fig.show()
 ```
 
 
 ```{python}
-fig = px.scatter_ternary(pop_den_df, 
+df = pop_den_df.copy()
+df["Time"] = (df["Time"]) / 5 + 2
+fig = px.scatter_ternary(df, 
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+fig.update_layout(legend= {'itemsizing': 'constant'})
 fig.write_image(result_dir + "rep123_all_reps.pdf")
-# fig.show()
+fig.show()
 ```
 
 ```{python}
@@ -209,7 +220,7 @@ fig = px.scatter_ternary(df,
                          color="Time", symbol="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.write_image(result_dir + "rep123_all_reps_alt.pdf")
-# fig.show()
+fig.show()
 ```
 
 ```{python}
@@ -223,6 +234,21 @@ fig.update_layout(legend_x=0.8, legend_y=1.0)
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.write_image(result_dir + "rep123_all_reps_alt_cont.pdf")
 # fig.show()
+```
+
+```{python}
+df = pop_den_df.copy()
+# df["Time"] = df["Time"].astype(str) + " h"
+df["Time"] = (df["Time"]) / 5 + 2
+fig = px.scatter_ternary(df, 
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         size="Time", color="Carbon")
+# fig.update_coloraxes(colorbar_x=1.0, colorbar_y=0.52)
+fig.update_layout(legend= {'itemsizing': 'trace'})
+# fig.update_layout(legend_x=0.8, legend_y=1.0)
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+fig.write_image(result_dir + "rep123_all_reps_alt_cont_size.pdf")
+fig.show()
 ```
 
 ```{python}
@@ -272,6 +298,8 @@ pop_vol_1d_df["Relative Volume"] = pop_vol_1d_df["Volume"] / pop_vol_1d_df["Volu
 pop_vol_1d_df["V. paradoxus / Volume"] = pop_vol_1d_df["V. paradoxus"] / pop_vol_1d_df["Volume"]
 pop_vol_1d_df["S. fribergensis / Volume"] = pop_vol_1d_df["S. fribergensis"] / pop_vol_1d_df["Volume"]
 pop_vol_1d_df["Rhodococcus spp. / Volume"] = pop_vol_1d_df["Rhodococcus spp."] / pop_vol_1d_df["Volume"]
+pop_vol_1d_df["Total"] = pop_vol_1d_df["V. paradoxus"] + pop_vol_1d_df["S. fribergensis"] + pop_vol_1d_df["Rhodococcus spp."]
+pop_vol_1d_df["Total / Volume"] = pop_vol_1d_df["Total"] / pop_vol_1d_df["Volume"]
 pop_vol_1d_df.to_pickle(result_dir + "spatial/pop_vol_1d_df_" + str(slide_win) + ".pkl")
 delta_pop_vol_1d_df = pd.DataFrame(delta_pop_volumes_1d, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Radius", "Step", "Volume"])
 delta_pop_vol_1d_df.to_pickle(result_dir + "spatial/delta_pop_vol_1d_df_" + str(slide_win) + ".pkl")
@@ -285,6 +313,13 @@ pop_den_1d_df["Relative Volume"] = pop_den_1d_df["Volume"] / pop_den_1d_df["Volu
 pop_den_1d_df.to_pickle(result_dir + "spatial/pop_den_1d_df_" + str(slide_win) + ".pkl")
 delta_pop_den_1d_df = pd.DataFrame(delta_pop_densities_1d, columns = ["Rep", "Carbon", "Time", "V. paradoxus", "S. fribergensis", "Rhodococcus spp.", "Radius", "Step", "Volume"])
 delta_pop_den_1d_df.to_pickle(result_dir + "spatial/delta_pop_den_1d_df_" + str(slide_win) + ".pkl")
+```
+
+```{python}
+pop_vol_1d_df = pd.read_pickle(result_dir + "spatial/pop_vol_1d_df_" + str(slide_win) + ".pkl")
+delta_pop_vol_1d_df = pd.read_pickle(result_dir + "spatial/delta_pop_vol_1d_df_" + str(slide_win) + ".pkl")
+pop_den_1d_df = pd.read_pickle(result_dir + "spatial/pop_den_1d_df_" + str(slide_win) + ".pkl")
+delta_pop_den_1d_df = pd.read_pickle(result_dir + "spatial/delta_pop_den_1d_df_" + str(slide_win) + ".pkl")
 ```
 
 
@@ -396,6 +431,7 @@ fig.show()
 
 ```{python}
 df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep1") & ((pop_den_1d_df["Radius"] == 0 + slide_win//2) | (pop_den_1d_df["Radius"] == 750 + slide_win//2) | (pop_den_1d_df["Radius"] == 1500 + slide_win//2) | (pop_den_1d_df["Radius"] == 2250 + slide_win//2) | (pop_den_1d_df["Radius"] == 3000 + slide_win//2))]
+df4plot["Time"] = (df4plot["Time"]) / 5 + 2
 fig = px.scatter_ternary(df4plot,
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon", symbol="Radius")
@@ -406,6 +442,7 @@ fig.show()
 
 ```{python}
 df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep2") & ((pop_den_1d_df["Radius"] == 0 + slide_win//2) | (pop_den_1d_df["Radius"] == 750 + slide_win//2) | (pop_den_1d_df["Radius"] == 1500 + slide_win//2) | (pop_den_1d_df["Radius"] == 2250 + slide_win//2) | (pop_den_1d_df["Radius"] == 3000 + slide_win//2))]
+df4plot["Time"] = (df4plot["Time"]) / 5 + 2
 fig = px.scatter_ternary(df4plot, 
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon", symbol="Radius")
@@ -416,6 +453,7 @@ fig.show()
 
 ```{python}
 df4plot = pop_den_1d_df[(pop_den_1d_df["Rep"] == "rep3") & ((pop_den_1d_df["Radius"] == 0 + slide_win//2) | (pop_den_1d_df["Radius"] == 750 + slide_win//2) | (pop_den_1d_df["Radius"] == 1500 + slide_win//2) | (pop_den_1d_df["Radius"] == 2250 + slide_win//2) | (pop_den_1d_df["Radius"] == 3000 + slide_win//2))]
+df4plot["Time"] = (df4plot["Time"]) / 5 + 2
 fig = px.scatter_ternary(df4plot, 
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon", symbol="Radius")
@@ -506,23 +544,29 @@ pop_vol_melted = pd.melt(pop_vol, id_vars=["Time", "Carbon"], value_vars=["Total
 
 color_map = {'V. paradoxus': 'red', 'S. fribergensis': 'green', 'Rhodococcus spp.': 'blue'}
 sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Nag")], x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 7e9)
 plt.savefig(result_dir + "boxplot_Nag_volume.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chito5")], x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 7e9)
 plt.savefig(result_dir + "boxplot_Chito5_volume.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitin")], x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 7e9)
 plt.savefig(result_dir + "boxplot_Chitin_volume.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 
 color_map = {'V. paradoxus': 'red', 'S. fribergensis': 'green', 'Rhodococcus spp.': 'blue', 'Total': 'grey'}
 sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "Nag")], x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 7e9)
 plt.savefig(result_dir + "boxplot_Nag_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "Chito5")], x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 7e9)
 plt.savefig(result_dir + "boxplot_Chito5_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitin")], x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 7e9)
 plt.savefig(result_dir + "boxplot_Chitin_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 ```
@@ -538,10 +582,155 @@ sns.scatterplot(data=df, y="S. fribergensis / Volume", x="Relative Volume", hue=
 ```
 
 ```{python}
+df = pop_vol_1d_df.copy()
+# df = df[df["Time"] == 37 & (df["Rep"] == 'rep2')]
+df["dv_dvol"] = np.gradient(df["V. paradoxus / Volume"], df["Relative Volume"])
+df["ds_dvol"] = np.gradient(df["S. fribergensis / Volume"], df["Relative Volume"])
+df["dr_dvol"] = np.gradient(df["Rhodococcus spp. / Volume"], df["Relative Volume"])
+df["dv_drad"] = np.gradient(df["V. paradoxus / Volume"], df["Radius"])
+df["ds_drad"] = np.gradient(df["S. fribergensis / Volume"], df["Radius"])
+df["dr_drad"] = np.gradient(df["Rhodococcus spp. / Volume"], df["Radius"])
+df["dvol_drad"] = np.gradient(df["Relative Volume"], df["Radius"])
+df["Habitant size"] = pd.NA
+df.loc[df["Relative Volume"] < 0.4, "Habitant size"] = "Small"
+df.loc[(df["Relative Volume"] >= 0.5) & (df["Relative Volume"] < 0.7), "Habitant size"] = "Medium"
+df.loc[df["Relative Volume"] >= 0.8, "Habitant size"] = "Large"
+# color_map = {'V. paradoxus': 'red', 'S. fribergensis': 'green', 'Rhodococcus spp.': 'blue'}
+# sns.scatterplot(data=df, y="V. paradoxus / Volume", x="Relative Volume", hue="Carbon")
+# sns.scatterplot(data=df, y="S. fribergensis / Volume", x="Relative Volume", hue="Carbon")
+# sns.scatterplot(data=df, y="Rhodococcus spp. / Volume", x="Relative Volume", hue="Carbon")
+
+# sns.scatterplot(data=df, y="V. paradoxus", x="Relative Volume", hue="Carbon")
+sns.scatterplot(data=df, y="S. fribergensis", x="Volume", hue="Carbon")
+# sns.scatterplot(data=df, y="Rhodococcus spp.", x="Relative Volume", hue="Carbon")
+
+# sns.scatterplot(data=df, y="dv_dvol", x="ds_dvol", hue="Carbon")
+
 
 ```
 
 ```{python}
+df = pop_vol_1d_df.copy()
+df["Habitant size"] = pd.NA
+df.loc[df["Relative Volume"] < 0.3, "Habitant size"] = "Small"
+df.loc[(df["Relative Volume"] >= 0.4) & (df["Relative Volume"] < 0.7), "Habitant size"] = "Medium"
+df.loc[df["Relative Volume"] >= 0.8, "Habitant size"] = "Large"
+# df.loc[df["Relative Volume"] < 0.2, "Habitant size"] = "[0,0.2)"
+# df.loc[df["Relative Volume"] < 0.1, "Habitant size"] = "[0,0.1)"
+# df.loc[(df["Relative Volume"] >= 0.1) & (df["Relative Volume"] < 0.2), "Habitant size"] = "[0.1,0.2)"
+# df.loc[(df["Relative Volume"] >= 0.2) & (df["Relative Volume"] < 0.3), "Habitant size"] = "[0.2,0.3)"
+# df.loc[(df["Relative Volume"] >= 0.3) & (df["Relative Volume"] < 0.4), "Habitant size"] = "[0.3,0.4)"
+# df.loc[(df["Relative Volume"] >= 0.4) & (df["Relative Volume"] < 0.5), "Habitant size"] = "[0.4,0.5)"
+# df.loc[(df["Relative Volume"] >= 0.5) & (df["Relative Volume"] < 0.6), "Habitant size"] = "[0.5,0.6)"
+# df.loc[(df["Relative Volume"] >= 0.6) & (df["Relative Volume"] < 0.7), "Habitant size"] = "[0.6,0.7)"
+# df.loc[(df["Relative Volume"] >= 0.7) & (df["Relative Volume"] < 0.8), "Habitant size"] = "[0.7,0.8)"
+# df.loc[(df["Relative Volume"] >= 0.8) & (df["Relative Volume"] < 0.9), "Habitant size"] = "[0.8,0.9)"
+# df.loc[df["Relative Volume"] >= 0.9, "Habitant size"] = "[0.9,1.0)"
+# df.loc[df["Relative Volume"] >= 0.8, "Habitant size"] = "[0.8,1.0]"
+# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitant size", "Radius", "Relative Volume"], value_vars=["Total", "V. paradoxus", "S. fribergensis", "Rhodococcus spp."], var_name="Species", value_name="Biomass")
+# color_map = {'V. paradoxus': 'red', 'S. fribergensis': 'green', 'Rhodococcus spp.': 'blue', 'Total': 'grey'}
+df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitant size", "Radius", "Relative Volume"], value_vars=["V. paradoxus", "S. fribergensis", "Rhodococcus spp."], var_name="Species", value_name="Biomass")
+color_map = {'V. paradoxus': 'red', 'S. fribergensis': 'green', 'Rhodococcus spp.': 'blue'}
+# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitant size", "Radius", "Relative Volume"], value_vars=["V. paradoxus / Volume", "S. fribergensis / Volume", "Rhodococcus spp. / Volume"], var_name="Species", value_name="Biomass / Habitant size")
+# color_map = {'V. paradoxus / Volume': 'red', 'S. fribergensis / Volume': 'green', 'Rhodococcus spp. / Volume': 'blue'}
+
+df4plot = df4plot.loc[df4plot["Time"] == 90]
+df4plot = df4plot.loc[df4plot["Biomass"] > 0]
+# sns.boxplot(data=df4plot[df4plot["Time"] == 90 & (df4plot["Carbon"] == "Nag")], x="Habitant size", y="Biomass", hue="Species", palette=color_map, sym = "")
+# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Nag")], x="Habitant size", y="Biomass", hue="Species", palette=color_map, sym = "")
+sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chito5")], x="Habitant size", y="Biomass", hue="Species", palette=color_map, sym = "")
+# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chitin")], x="Habitant size", y="Biomass", hue="Species", palette=color_map, sym = "")
+# plt.ylim(1, 1.5e4)
+# plt.yscale("log")
+
+
+```
+
+```{python}
+df = pop_den_1d_df.copy()
+df = df.loc[(df[["V. paradoxus", "S. fribergensis", "Rhodococcus spp."]] != 0).all(axis=1)]
+df["Habitant size"] = pd.NA
+df.loc[df["Relative Volume"] < 0.3, "Habitant size"] = "Small"
+df.loc[(df["Relative Volume"] >= 0.4) & (df["Relative Volume"] < 0.7), "Habitant size"] = "Medium"
+df.loc[df["Relative Volume"] >= 0.8, "Habitant size"] = "Large"
+# df.loc[df["Relative Volume"] < 0.2, "Habitant size"] = "[0,0.2)"
+# df.loc[df["Relative Volume"] < 0.1, "Habitant size"] = "[0,0.1)"
+# df.loc[(df["Relative Volume"] >= 0.1) & (df["Relative Volume"] < 0.2), "Habitant size"] = "[0.1,0.2)"
+# df.loc[(df["Relative Volume"] >= 0.2) & (df["Relative Volume"] < 0.3), "Habitant size"] = "[0.2,0.3)"
+# df.loc[(df["Relative Volume"] >= 0.3) & (df["Relative Volume"] < 0.4), "Habitant size"] = "[0.3,0.4)"
+# df.loc[(df["Relative Volume"] >= 0.4) & (df["Relative Volume"] < 0.5), "Habitant size"] = "[0.4,0.5)"
+# df.loc[(df["Relative Volume"] >= 0.5) & (df["Relative Volume"] < 0.6), "Habitant size"] = "[0.5,0.6)"
+# df.loc[(df["Relative Volume"] >= 0.6) & (df["Relative Volume"] < 0.7), "Habitant size"] = "[0.6,0.7)"
+# df.loc[(df["Relative Volume"] >= 0.7) & (df["Relative Volume"] < 0.8), "Habitant size"] = "[0.7,0.8)"
+# df.loc[(df["Relative Volume"] >= 0.8) & (df["Relative Volume"] < 0.9), "Habitant size"] = "[0.8,0.9)"
+# df.loc[df["Relative Volume"] >= 0.9, "Habitant size"] = "[0.9,1.0)"
+# df.loc[df["Relative Volume"] >= 0.8, "Habitant size"] = "[0.8,1.0]"
+# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitant size", "Radius", "Relative Volume"], value_vars=["Total", "V. paradoxus", "S. fribergensis", "Rhodococcus spp."], var_name="Species", value_name="Density")
+# color_map = {'V. paradoxus': 'red', 'S. fribergensis': 'green', 'Rhodococcus spp.': 'blue', 'Total': 'grey'}
+df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitant size", "Radius", "Relative Volume"], value_vars=["V. paradoxus", "S. fribergensis", "Rhodococcus spp."], var_name="Species", value_name="Density")
+color_map = {'V. paradoxus': 'red', 'S. fribergensis': 'green', 'Rhodococcus spp.': 'blue'}
+# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitant size", "Radius", "Relative Volume"], value_vars=["V. paradoxus / Volume", "S. fribergensis / Volume", "Rhodococcus spp. / Volume"], var_name="Species", value_name="Density / Habitant size")
+# color_map = {'V. paradoxus / Volume': 'red', 'S. fribergensis / Volume': 'green', 'Rhodococcus spp. / Volume': 'blue'}
+
+df4plot = df4plot.loc[df4plot["Density"] > 0]
+# df4plot = df4plot.loc[df4plot["Time"] == 37]
+# sns.boxplot(data=df4plot[df4plot["Time"] == 90 & (df4plot["Carbon"] == "Nag")], x="Habitant size", y="Density", hue="Species", palette=color_map, sym = "")
+# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Nag")], x="Habitant size", y="Density", hue="Species", palette=color_map, sym = "")
+# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chito5")], x="Habitant size", y="Density", hue="Species", palette=color_map, sym = "")
+# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chitin")], x="Habitant size", y="Density", hue="Species", palette=color_map, sym = "")
+# plt.ylim(1, 1.5e4)
+# plt.yscale("log")
+
+matplotlib.rcParams['figure.figsize'] = (3, 3)
+
+for time in [11, 37, 90]:
+    for carbon in ["Nag", "Chito5", "Chitin"]:
+        df4plot2 = df4plot.loc[df4plot["Time"] == time & (df4plot["Carbon"] == carbon)]
+        sns.boxplot(data=df4plot2, x="Habitant size", y="Density", hue="Species", palette=color_map, sym = "")
+        plt.legend([],[], frameon=False)
+        plt.savefig(result_dir + "density_vs_habitant_size_" + carbon + "_at_" + str(time) + "pdf", bbox_inches='tight', dpi=300)
+        plt.close()
+
+```
+
+```{python}
+df = pop_vol_1d_df.copy()
+df["Habitant position"] = pd.NA
+df.loc[df["Radius"] < 1500, "Habitant position"] = "Left"
+df.loc[(df["Radius"] >= 1500) & (df["Radius"] < 3000), "Habitant position"] = "Middle"
+df.loc[df["Radius"] >= 3000, "Habitant position"] = "Right"
+df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitant position", "Radius", "Relative Volume"], value_vars=["V. paradoxus", "S. fribergensis", "Rhodococcus spp."], var_name="Species", value_name="Biomass")
+color_map = {'V. paradoxus': 'red', 'S. fribergensis': 'green', 'Rhodococcus spp.': 'blue'}
+
+df4plot = df4plot.loc[df4plot["Biomass"] > 0]
+
+
+for time in [11, 37, 90]:
+    for carbon in ["Nag", "Chito5", "Chitin"]:
+        df4plot2 = df4plot.loc[df4plot["Time"] == time & (df4plot["Carbon"] == carbon)]
+        sns.boxplot(data=df4plot2, x="Habitant position", y="Biomass", hue="Species", palette=color_map, sym = "")
+        plt.legend([],[], frameon=False)
+        plt.yscale("log")
+        plt.savefig(result_dir + "biomass_vs_habitant_position_" + carbon + "_at_" + str(time) + "pdf", bbox_inches='tight', dpi=300)
+        plt.close()
+
+```
+
+```{python}
+df = pop_den_1d_df.copy()
+# df = df[df["Time"] == 90 & (df["Rep"] == 'rep2') & (df["Carbon"] == 'Nag')]
+df = df[df["Time"] == 90 & (df["Rep"] == 'rep2')]
+# df["Time"] = df["Time"].astype(str) + " h"
+# df["Time"] = (df["Time"]) / 5 + 2
+fig = px.scatter_ternary(df, 
+                         a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
+                         color="Relative Volume", symbol="Carbon")
+fig.update_coloraxes(colorbar_x=1.0, colorbar_y=0.52)
+# fig.update_layout(legend= {'itemsizing': 'trace'})
+fig.update_layout(legend_x=0.8, legend_y=1.0)
+fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+# fig.write_image(result_dir + "test.pdf")
+fig.show()
 ```
 
 ```{python}
