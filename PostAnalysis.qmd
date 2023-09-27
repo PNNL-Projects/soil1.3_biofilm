@@ -162,8 +162,8 @@ fig = px.scatter_ternary(df[pop_den_df["Rep"] == "rep1"],
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
-fig.write_image(result_dir + "rep1.pdf")
 fig.show()
+fig.write_image(result_dir + "rep1.pdf")
 ```
 
 ```{python}
@@ -173,8 +173,8 @@ fig = px.scatter_ternary(df[pop_den_df["Rep"] == "rep2"],
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
-fig.write_image(result_dir + "rep2.pdf")
 fig.show()
+fig.write_image(result_dir + "rep2.pdf")
 ```
 
 ```{python}
@@ -184,8 +184,8 @@ fig = px.scatter_ternary(df[pop_den_df["Rep"] == "rep3"],
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
-fig.write_image(result_dir + "rep3.pdf")
 fig.show()
+fig.write_image(result_dir + "rep3.pdf")
 ```
 
 ```{python}
@@ -195,8 +195,8 @@ fig = px.scatter_ternary(df,
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          size="Time", color="Carbon", symbol="Rep")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
-fig.write_image(result_dir + "rep123.pdf")
 fig.show()
+fig.write_image(result_dir + "rep123.pdf")
 ```
 
 
@@ -208,8 +208,8 @@ fig = px.scatter_ternary(df,
                          size="Time", color="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.update_layout(legend= {'itemsizing': 'constant'})
-fig.write_image(result_dir + "rep123_all_reps.pdf")
 fig.show()
+fig.write_image(result_dir + "rep123_all_reps.pdf")
 ```
 
 ```{python}
@@ -219,8 +219,8 @@ fig = px.scatter_ternary(df,
                          a='V. paradoxus', b='S. fribergensis', c='Rhodococcus spp.', 
                          color="Time", symbol="Carbon")
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
-fig.write_image(result_dir + "rep123_all_reps_alt.pdf")
 fig.show()
+fig.write_image(result_dir + "rep123_all_reps_alt.pdf")
 ```
 
 ```{python}
@@ -232,8 +232,8 @@ fig = px.scatter_ternary(df,
 fig.update_coloraxes(colorbar_x=1.0, colorbar_y=0.52)
 fig.update_layout(legend_x=0.8, legend_y=1.0)
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
+fig.show()
 fig.write_image(result_dir + "rep123_all_reps_alt_cont.pdf")
-# fig.show()
 ```
 
 ```{python}
