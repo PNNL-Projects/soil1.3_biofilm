@@ -131,9 +131,18 @@ for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["Act
             rgb_array = pickle.load(f)
         mask_vol = mask_array.sum()
         pops = rgb_array.sum(axis=(0,1))
-        pop_volumes.append([folder.split('_')[2], sample[1], sample[2], pops[0], pops[1], pops[2], mask_vol])
+        if sample[1] == "Nag":
+            # sample_carbon_name = "N-acetylglucosamine"
+            sample_carbon_name = "NAG"
+        elif sample[1] == "Chito5":
+            sample_carbon_name = "Chitopentose"
+        elif sample[1] == "Chitin":
+            sample_carbon_name = "Chitin"
+        else:
+            sample_carbon_name = "Unknown"
+        pop_volumes.append([folder.split('_')[2], sample_carbon_name, sample[2], pops[0], pops[1], pops[2], mask_vol])
         pop_den = pops / pops.sum()
-        pop_densities.append([folder.split('_')[2], sample[1], sample[2], pop_den[0], pop_den[1], pop_den[2], mask_vol])
+        pop_densities.append([folder.split('_')[2], sample_carbon_name, sample[2], pop_den[0], pop_den[1], pop_den[2], mask_vol])
 # pop_den_table = [list(pop_deni) for pop_deni in zip(*pop_densities)]
 
 pop_den_df = pd.DataFrame(pop_densities, columns = ["Rep", "Carbon", "Time", "Variovorax", "Sphingopyxis", "Rhodococcus", "Volume"])
@@ -230,7 +239,7 @@ fig = px.scatter_ternary(df,
                          a='Variovorax', b='Sphingopyxis', c='Rhodococcus', 
                          color="Time", symbol="Carbon", color_continuous_scale=px.colors.sequential.turbid)
 fig.update_traces(marker={'size': 15})
-fig.update_coloraxes(colorbar_x=1.0, colorbar_y=0.52)
+fig.update_coloraxes(colorbar_x=1.03, colorbar_y=0.52)
 fig.update_layout(legend_x=0.8, legend_y=1.0)
 fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.show()
@@ -273,23 +282,32 @@ for rep_samples, folder in zip([rep1_samples, rep2_samples, rep3_samples], ["Act
             rgb_array = pickle.load(f)
         mask_vol = slide_sum_y_vol(mask_array, slide_win)
         pop_vol = slide_sum_y_vol(rgb_array, slide_win)
+        if sample[1] == "Nag":
+            # sample_carbon_name = "N-acetylglucosamine"
+            sample_carbon_name = "NAG"
+        elif sample[1] == "Chito5":
+            sample_carbon_name = "Chitopentose"
+        elif sample[1] == "Chitin":
+            sample_carbon_name = "Chitin"
+        else:
+            sample_carbon_name = "Unknown"
         for i in range(len(pop_vol)):
-            pop_volumes_1d.append([folder.split('_')[2], sample[1], sample[2], pop_vol[i,0], pop_vol[i,1], pop_vol[i,2], i, mask_vol[i]])
+            pop_volumes_1d.append([folder.split('_')[2], sample_carbon_name, sample[2], pop_vol[i,0], pop_vol[i,1], pop_vol[i,2], i, mask_vol[i]])
             if i > 0:
-                delta_pop_volumes_1d.append([folder.split('_')[2], sample[1], sample[2], pop_vol[i,0] - pop_vol[i-1,0], pop_vol[i,1] - pop_vol[i-1,1], pop_vol[i,2] - pop_vol[i-1,2], i, 1, mask_vol[i] - mask_vol[i-1]])
+                delta_pop_volumes_1d.append([folder.split('_')[2], sample_carbon_name, sample[2], pop_vol[i,0] - pop_vol[i-1,0], pop_vol[i,1] - pop_vol[i-1,1], pop_vol[i,2] - pop_vol[i-1,2], i, 1, mask_vol[i] - mask_vol[i-1]])
             if i >= 10:
-                delta_pop_volumes_1d.append([folder.split('_')[2], sample[1], sample[2], pop_vol[i,0] - pop_vol[i-10,0], pop_vol[i,1] - pop_vol[i-10,1], pop_vol[i,2] - pop_vol[i-10,2], i, 10, mask_vol[i] - mask_vol[i-10]])
+                delta_pop_volumes_1d.append([folder.split('_')[2], sample_carbon_name, sample[2], pop_vol[i,0] - pop_vol[i-10,0], pop_vol[i,1] - pop_vol[i-10,1], pop_vol[i,2] - pop_vol[i-10,2], i, 10, mask_vol[i] - mask_vol[i-10]])
             if i >= 100:
-                delta_pop_volumes_1d.append([folder.split('_')[2], sample[1], sample[2], pop_vol[i,0] - pop_vol[i-100,0], pop_vol[i,1] - pop_vol[i-100,1], pop_vol[i,2] - pop_vol[i-100,2], i, 100, mask_vol[i] - mask_vol[i-100]])
+                delta_pop_volumes_1d.append([folder.split('_')[2], sample_carbon_name, sample[2], pop_vol[i,0] - pop_vol[i-100,0], pop_vol[i,1] - pop_vol[i-100,1], pop_vol[i,2] - pop_vol[i-100,2], i, 100, mask_vol[i] - mask_vol[i-100]])
         pop_den = get_pop_density(slide_sum_y_vol(rgb_array, slide_win))
         for i in range(len(pop_den)):
-            pop_densities_1d.append([folder.split('_')[2], sample[1], sample[2], pop_den[i,0], pop_den[i,1], pop_den[i,2], i, mask_vol[i]])
+            pop_densities_1d.append([folder.split('_')[2], sample_carbon_name, sample[2], pop_den[i,0], pop_den[i,1], pop_den[i,2], i, mask_vol[i]])
             if i > 0:
-                delta_pop_densities_1d.append([folder.split('_')[2], sample[1], sample[2], pop_den[i,0] - pop_den[i-1,0], pop_den[i,1] - pop_den[i-1,1], pop_den[i,2] - pop_den[i-1,2], i, 1, mask_vol[i] - mask_vol[i-1]])
+                delta_pop_densities_1d.append([folder.split('_')[2], sample_carbon_name, sample[2], pop_den[i,0] - pop_den[i-1,0], pop_den[i,1] - pop_den[i-1,1], pop_den[i,2] - pop_den[i-1,2], i, 1, mask_vol[i] - mask_vol[i-1]])
             if i >= 10:
-                delta_pop_densities_1d.append([folder.split('_')[2], sample[1], sample[2], pop_den[i,0] - pop_den[i-10,0], pop_den[i,1] - pop_den[i-10,1], pop_den[i,2] - pop_den[i-10,2], i, 10, mask_vol[i] - mask_vol[i-10]])
+                delta_pop_densities_1d.append([folder.split('_')[2], sample_carbon_name, sample[2], pop_den[i,0] - pop_den[i-10,0], pop_den[i,1] - pop_den[i-10,1], pop_den[i,2] - pop_den[i-10,2], i, 10, mask_vol[i] - mask_vol[i-10]])
             if i >= 100:
-                delta_pop_densities_1d.append([folder.split('_')[2], sample[1], sample[2], pop_den[i,0] - pop_den[i-100,0], pop_den[i,1] - pop_den[i-100,1], pop_den[i,2] - pop_den[i-100,2], i, 100, mask_vol[i] - mask_vol[i-100]])
+                delta_pop_densities_1d.append([folder.split('_')[2], sample_carbon_name, sample[2], pop_den[i,0] - pop_den[i-100,0], pop_den[i,1] - pop_den[i-100,1], pop_den[i,2] - pop_den[i-100,2], i, 100, mask_vol[i] - mask_vol[i-100]])
 # pop_den_table = [list(pop_deni) for pop_deni in zip(*pop_densities)]
 ```
 
@@ -327,8 +345,8 @@ delta_pop_den_1d_df = pd.read_pickle(result_dir + "spatial/delta_pop_den_1d_df_"
 
 ```{python}
 df = pop_den_1d_df.copy()
-dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
+dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66)].copy()
 fig = px.line(dft, x='Radius', y=['Variovorax', 'Sphingopyxis', 'Rhodococcus', 'Relative Volume'], title='1D with Nag at 66h')
 # fig.write_image(result_dir + "spatial/1D_with_Nag_at_66h_" + str(slide_win) + ".pdf")
 fig.show()
@@ -336,8 +354,8 @@ fig.show()
 
 ```{python}
 df = pop_den_1d_df.copy()
-dft = df[(df["Carbon"] == "Chito5") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
-# dft = df[(df["Carbon"] == "Chito5") & (df["Time"] == 66)].copy()
+dft = df[(df["Carbon"] == "Chitopentose") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# dft = df[(df["Carbon"] == "Chitopentose") & (df["Time"] == 66)].copy()
 fig = px.line(dft, x='Radius', y=['Variovorax', 'Sphingopyxis', 'Rhodococcus', 'Relative Volume'], title='1D with Chito5 at 66h')
 # fig.write_image(result_dir + "spatial/1D_with_Chito5_at_66h_" + str(slide_win) + ".pdf")
 fig.show()
@@ -354,24 +372,24 @@ fig.show()
 
 ```{python}
 # df = pop_den_1d_df.copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
-# # dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# # dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66)].copy()
 # fig = px.line_3d(dft, x='Variovorax', y='Sphingopyxis', z='Rhodococcus', title='1D with at 66h')
 # fig.show()
 ```
 
 ```{python}
 df = pop_den_1d_df.copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3") & (df["Radius"] % 100 == 0)].copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Radius"] % 100 == 0)].copy()
-# dft = df[(df["Carbon"] == "Chito5") & (df["Time"] == 66) & (df["Radius"] % 100 == 0)].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66) & (df["Rep"] == "rep3") & (df["Radius"] % 100 == 0)].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66) & (df["Radius"] % 100 == 0)].copy()
+# dft = df[(df["Carbon"] == "Chitopentose") & (df["Time"] == 66) & (df["Radius"] % 100 == 0)].copy()
 # dft = df[(df["Carbon"] == "Chitin") & (df["Time"] == 66) & (df["Radius"] % 100 == 0)].copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Radius"] % 100 == 0)].copy()
-# dft = df[(df["Carbon"] == "Chito5") & (df["Radius"] % 100 == 0)].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66)].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Radius"] % 100 == 0)].copy()
+# dft = df[(df["Carbon"] == "Chitopentose") & (df["Radius"] % 100 == 0)].copy()
 dft = df[(df["Carbon"] == "Chitin") & (df["Radius"] % 100 == 0)].copy()
-# dft = df[(df["Carbon"] == "Nag")].copy()
+# dft = df[(df["Carbon"] == "NAG")].copy()
 dft = df[(df["Radius"] % 100 == 0)].copy()
 # dft = df.copy()
 fig = px.scatter_ternary(dft,
@@ -383,16 +401,16 @@ fig.show()
 
 ```{python}
 df = pop_den_1d_df.copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3") & (df["Radius"] % 100 == 0)].copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Radius"] % 100 == 0)].copy()
-# dft = df[(df["Carbon"] == "Chito5") & (df["Time"] == 66) & (df["Radius"] % 100 == 0)].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66) & (df["Rep"] == "rep3") & (df["Radius"] % 100 == 0)].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66) & (df["Rep"] == "rep3")].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66) & (df["Radius"] % 100 == 0)].copy()
+# dft = df[(df["Carbon"] == "Chitopentose") & (df["Time"] == 66) & (df["Radius"] % 100 == 0)].copy()
 # dft = df[(df["Carbon"] == "Chitin") & (df["Time"] == 66) & (df["Radius"] % 100 == 0)].copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Radius"] % 100 == 0)].copy()
-# dft = df[(df["Carbon"] == "Chito5") & (df["Radius"] % 100 == 0)].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66)].copy()
+# dft = df[(df["Carbon"] == "NAG") & (df["Radius"] % 100 == 0)].copy()
+# dft = df[(df["Carbon"] == "Chitopentose") & (df["Radius"] % 100 == 0)].copy()
 # dft = df[(df["Carbon"] == "Chitin") & (df["Radius"] % 100 == 0)].copy()
-# dft = df[(df["Carbon"] == "Nag")].copy()
+# dft = df[(df["Carbon"] == "NAG")].copy()
 dft = df[(df["Radius"] % 100 == 0)].copy()
 # dft = df.copy()
 fig = px.scatter_ternary(dft,
@@ -404,10 +422,10 @@ fig.show()
 
 ```{python}
 # df = delta_pop_den_1d_df.copy()
-# dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66) & (df["Rep"] == "rep3")
+# dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66) & (df["Rep"] == "rep3")
 #          & (df["Step"] == 10)
 #          ].copy()
-# # dft = df[(df["Carbon"] == "Nag") & (df["Time"] == 66)].copy()
+# # dft = df[(df["Carbon"] == "NAG") & (df["Time"] == 66)].copy()
 # fig = px.scatter_3d(dft.loc[(df[['Variovorax', 'Sphingopyxis', 'Rhodococcus']] != 0).all(axis=1)], x='Variovorax', y='Sphingopyxis', z='Rhodococcus', title='1D with at 66h')
 # fig.update_traces(
 #     marker=dict(size=2)
@@ -476,7 +494,7 @@ for time in times:
     for rep in ["rep" + str(i+1) for i in range(3)]:
         dfr = df[(df["Time"] == time) & (df["Rep"] == rep)].copy()
         # ymax = dfr[['Variovorax', 'Sphingopyxis', 'Rhodococcus']].values.flatten().max()
-        for carbon in ["Nag", "Chito5", "Chitin"]:
+        for carbon in ["NAG", "Chito", "Chitin"]:
             dft = dfr[(dfr["Carbon"] == carbon)].copy()
             fig = px.line(dft, x='Radius', y=['Variovorax', 'Sphingopyxis', 'Rhodococcus', 'Relative Volume'], title="Population density of " + rep + " with " + carbon + " at " + str(time) + "h", color_discrete_map=color_map, template="ggplot2")
             # fig.show()
@@ -487,7 +505,7 @@ for time in times:
 df = pop_vol_1d_df.copy()
 # color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue', 'Volume': 'grey'}
 color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue'}
-for carbon in ["Nag", "Chito5", "Chitin"]:
+for carbon in ["NAG", "Chitopentose", "Chitin"]:
     for rep in ["rep" + str(i+1) for i in range(3)]:
         dfr = df[(df["Carbon"] == carbon) & (df["Rep"] == rep)].copy()
         ymax = dfr[['Variovorax', 'Sphingopyxis', 'Rhodococcus']].values.flatten().max()
@@ -509,7 +527,7 @@ for time in times:
     for rep in ["rep" + str(i+1) for i in range(3)]:
         dfr = df[(df["Time"] == time) & (df["Rep"] == rep)].copy()
         ymax = dfr[['Variovorax', 'Sphingopyxis', 'Rhodococcus']].values.flatten().max()
-        for carbon in ["Nag", "Chito5", "Chitin"]:
+        for carbon in ["NAG", "Chitopentose", "Chitin"]:
             dft = dfr[(dfr["Carbon"] == carbon)].copy()
             vol_scalor = dft[['Variovorax / Volume', 'Sphingopyxis / Volume', 'Rhodococcus/ Volume']].values.flatten().max() / dft["Relative Volume"].max()
             dft["Relative Volume"] = dft["Relative Volume"] * vol_scalor
@@ -541,7 +559,6 @@ delta_pop_vol_1d_df = pd.read_pickle(result_dir + "spatial/delta_pop_vol_1d_df_"
 sns.set_style("white")
 matplotlib.rcParams['figure.dpi'] = 200
 matplotlib.rcParams['figure.figsize'] = (4, 4)
-
 ```
 
 ```{python}
@@ -583,15 +600,15 @@ plt.close()
 pop_vol_melted = pd.melt(pop_vol, id_vars=["Time", "Carbon"], value_vars=["Total", "Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Biomass")
 
 color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue'}
-sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Nag")], x="Time", y="Biomass", hue="Species", palette=color_map)
+sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "NAG")], x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 7e9)
 plt.legend([],[], frameon=False)
-plt.savefig(result_dir + "boxplot_Nag_volume.pdf", bbox_inches='tight', dpi=300)
+plt.savefig(result_dir + "boxplot_NAG_volume.pdf", bbox_inches='tight', dpi=300)
 plt.close()
-sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chito5")], x="Time", y="Biomass", hue="Species", palette=color_map)
+sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitopentose")], x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 7e9)
 plt.legend([],[], frameon=False)
-plt.savefig(result_dir + "boxplot_Chito5_volume.pdf", bbox_inches='tight', dpi=300)
+plt.savefig(result_dir + "boxplot_Chitopentose_volume.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitin")], x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 7e9)
@@ -599,15 +616,15 @@ plt.savefig(result_dir + "boxplot_Chitin_volume.pdf", bbox_inches='tight', dpi=3
 plt.close()
 
 color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue', 'Total': 'grey'}
-sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "Nag")], x="Time", y="Biomass", hue="Species", palette=color_map)
+sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "NAG")], x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 7e9)
 plt.legend([],[], frameon=False)
-plt.savefig(result_dir + "boxplot_Nag_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
+plt.savefig(result_dir + "boxplot_NAG_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
 plt.close()
-sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "Chito5")], x="Time", y="Biomass", hue="Species", palette=color_map)
+sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitopentose")], x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 7e9)
 plt.legend([],[], frameon=False)
-plt.savefig(result_dir + "boxplot_Chito5_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
+plt.savefig(result_dir + "boxplot_Chitopentose_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitin")], x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 7e9)
@@ -636,10 +653,10 @@ df["dv_drad"] = np.gradient(df["Variovorax / Volume"], df["Radius"])
 df["ds_drad"] = np.gradient(df["Sphingopyxis / Volume"], df["Radius"])
 df["dr_drad"] = np.gradient(df["Rhodococcus/ Volume"], df["Radius"])
 df["dvol_drad"] = np.gradient(df["Relative Volume"], df["Radius"])
-df["Habitate size"] = np.nan
-df.loc[df["Relative Volume"] < 0.4, "Habitate size"] = "Small (0.2~0.4)"
-df.loc[(df["Relative Volume"] >= 0.5) & (df["Relative Volume"] < 0.7), "Habitate size"] = "Medium (0.5~0.7)"
-df.loc[df["Relative Volume"] >= 0.8, "Habitate size"] = "Large (0.8~1.0)"
+df["Habitat size"] = np.nan
+df.loc[df["Relative Volume"] < 0.4, "Habitat size"] = "Small (0.2~0.4)"
+df.loc[(df["Relative Volume"] >= 0.5) & (df["Relative Volume"] < 0.7), "Habitat size"] = "Medium (0.5~0.7)"
+df.loc[df["Relative Volume"] >= 0.8, "Habitat size"] = "Large (0.8~1.0)"
 # color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue'}
 # sns.scatterplot(data=df, y="Variovorax / Volume", x="Relative Volume", hue="Carbon")
 # sns.scatterplot(data=df, y="Sphingopyxis / Volume", x="Relative Volume", hue="Carbon")
@@ -656,35 +673,35 @@ plt.close()
 
 ```{python}
 df = pop_vol_1d_df.copy()
-df["Habitate size"] = np.nan
-df.loc[df["Relative Volume"] < 0.3, "Habitate size"] = "Small (0.2~0.4)"
-df.loc[(df["Relative Volume"] >= 0.4) & (df["Relative Volume"] < 0.7), "Habitate size"] = "Medium (0.5~0.7)"
-df.loc[df["Relative Volume"] >= 0.8, "Habitate size"] = "Large (0.8~1.0)"
-# df.loc[df["Relative Volume"] < 0.2, "Habitate size"] = "[0,0.2)"
-# df.loc[df["Relative Volume"] < 0.1, "Habitate size"] = "[0,0.1)"
-# df.loc[(df["Relative Volume"] >= 0.1) & (df["Relative Volume"] < 0.2), "Habitate size"] = "[0.1,0.2)"
-# df.loc[(df["Relative Volume"] >= 0.2) & (df["Relative Volume"] < 0.3), "Habitate size"] = "[0.2,0.3)"
-# df.loc[(df["Relative Volume"] >= 0.3) & (df["Relative Volume"] < 0.4), "Habitate size"] = "[0.3,0.4)"
-# df.loc[(df["Relative Volume"] >= 0.4) & (df["Relative Volume"] < 0.5), "Habitate size"] = "[0.4,0.5)"
-# df.loc[(df["Relative Volume"] >= 0.5) & (df["Relative Volume"] < 0.6), "Habitate size"] = "[0.5,0.6)"
-# df.loc[(df["Relative Volume"] >= 0.6) & (df["Relative Volume"] < 0.7), "Habitate size"] = "[0.6,0.7)"
-# df.loc[(df["Relative Volume"] >= 0.7) & (df["Relative Volume"] < 0.8), "Habitate size"] = "[0.7,0.8)"
-# df.loc[(df["Relative Volume"] >= 0.8) & (df["Relative Volume"] < 0.9), "Habitate size"] = "[0.8,0.9)"
-# df.loc[df["Relative Volume"] >= 0.9, "Habitate size"] = "[0.9,1.0)"
-# df.loc[df["Relative Volume"] >= 0.8, "Habitate size"] = "[0.8,1.0]"
-# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitate size", "Radius", "Relative Volume"], value_vars=["Total", "Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Biomass")
+df["Habitat size"] = np.nan
+df.loc[df["Relative Volume"] < 0.3, "Habitat size"] = "Small (0.2~0.4)"
+df.loc[(df["Relative Volume"] >= 0.4) & (df["Relative Volume"] < 0.7), "Habitat size"] = "Medium (0.5~0.7)"
+df.loc[df["Relative Volume"] >= 0.8, "Habitat size"] = "Large (0.8~1.0)"
+# df.loc[df["Relative Volume"] < 0.2, "Habitat size"] = "[0,0.2)"
+# df.loc[df["Relative Volume"] < 0.1, "Habitat size"] = "[0,0.1)"
+# df.loc[(df["Relative Volume"] >= 0.1) & (df["Relative Volume"] < 0.2), "Habitat size"] = "[0.1,0.2)"
+# df.loc[(df["Relative Volume"] >= 0.2) & (df["Relative Volume"] < 0.3), "Habitat size"] = "[0.2,0.3)"
+# df.loc[(df["Relative Volume"] >= 0.3) & (df["Relative Volume"] < 0.4), "Habitat size"] = "[0.3,0.4)"
+# df.loc[(df["Relative Volume"] >= 0.4) & (df["Relative Volume"] < 0.5), "Habitat size"] = "[0.4,0.5)"
+# df.loc[(df["Relative Volume"] >= 0.5) & (df["Relative Volume"] < 0.6), "Habitat size"] = "[0.5,0.6)"
+# df.loc[(df["Relative Volume"] >= 0.6) & (df["Relative Volume"] < 0.7), "Habitat size"] = "[0.6,0.7)"
+# df.loc[(df["Relative Volume"] >= 0.7) & (df["Relative Volume"] < 0.8), "Habitat size"] = "[0.7,0.8)"
+# df.loc[(df["Relative Volume"] >= 0.8) & (df["Relative Volume"] < 0.9), "Habitat size"] = "[0.8,0.9)"
+# df.loc[df["Relative Volume"] >= 0.9, "Habitat size"] = "[0.9,1.0)"
+# df.loc[df["Relative Volume"] >= 0.8, "Habitat size"] = "[0.8,1.0]"
+# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitat size", "Radius", "Relative Volume"], value_vars=["Total", "Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Biomass")
 # color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue', 'Total': 'grey'}
-df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitate size", "Radius", "Relative Volume"], value_vars=["Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Biomass")
+df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitat size", "Radius", "Relative Volume"], value_vars=["Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Biomass")
 color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue'}
-# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitate size", "Radius", "Relative Volume"], value_vars=["Variovorax / Volume", "Sphingopyxis / Volume", "Rhodococcus/ Volume"], var_name="Species", value_name="Biomass / Habitate size")
+# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitat size", "Radius", "Relative Volume"], value_vars=["Variovorax / Volume", "Sphingopyxis / Volume", "Rhodococcus/ Volume"], var_name="Species", value_name="Biomass / Habitat size")
 # color_map = {'Variovorax / Volume': 'red', 'Sphingopyxis / Volume': 'green', 'Rhodococcus/ Volume': 'blue'}
 
 df4plot = df4plot.loc[df4plot["Time"] == 90]
 df4plot = df4plot.loc[df4plot["Biomass"] > 0]
-# sns.boxplot(data=df4plot[df4plot["Time"] == 90 & (df4plot["Carbon"] == "Nag")], x="Habitate size", y="Biomass", hue="Species", palette=color_map, sym = "")
-# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Nag")], x="Habitate size", y="Biomass", hue="Species", palette=color_map, sym = "")
-sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chito5")], x="Habitate size", y="Biomass", hue="Species", palette=color_map, sym = "")
-# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chitin")], x="Habitate size", y="Biomass", hue="Species", palette=color_map, sym = "")
+# sns.boxplot(data=df4plot[df4plot["Time"] == 90 & (df4plot["Carbon"] == "NAG")], x="Habitat size", y="Biomass", hue="Species", palette=color_map, showfliers = False)
+# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "NAG")], x="Habitat size", y="Biomass", hue="Species", palette=color_map, showfliers = False)
+sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chitopentose")], x="Habitat size", y="Biomass", hue="Species", palette=color_map, showfliers = False)
+# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chitin")], x="Habitat size", y="Biomass", hue="Species", palette=color_map, showfliers = False)
 # plt.ylim(1, 1.5e4)
 # plt.yscale("log")
 
@@ -695,48 +712,49 @@ plt.close()
 df = pop_den_1d_df.copy()
 # df = df.loc[((df[["Variovorax", "Sphingopyxis", "Rhodococcus"]] != 0).all(axis=1)) & (df["Rep"] == "rep2")].copy()
 df = df.loc[(df[["Variovorax", "Sphingopyxis", "Rhodococcus"]] != 0).all(axis=1)].copy()
-df["Habitate size"] = np.nan
-# df.loc[df["Relative Volume"] < 0.3, "Habitate size"] = "Small"
-df.loc[(df["Relative Volume"] < 0.4) & (df["Relative Volume"] > 0.2), "Habitate size"] = "(0.2~0.4)"
-df.loc[(df["Relative Volume"] > 0.4) & (df["Relative Volume"] < 0.6), "Habitate size"] = "(0.4~0.6)"
-df.loc[(df["Relative Volume"] > 0.6) & (df["Relative Volume"] < 0.8), "Habitate size"] = "(0.6~0.8)"
-# df.loc[(df["Relative Volume"] > 0.5) & (df["Relative Volume"] < 0.7), "Habitate size"] = "(0.5~0.7)"
-# df.loc[df["Relative Volume"] >= 0.8, "Habitate size"] = "Large"
-df.loc[df["Relative Volume"] > 0.8, "Habitate size"] = "(0.8~1.0)"
-df.loc[df["Relative Volume"] < 0.2, "Habitate size"] = "(0.0~0.2)"
-# df.loc[df["Relative Volume"] < 0.1, "Habitate size"] = "[0,0.1)"
-# df.loc[(df["Relative Volume"] > 0.1) & (df["Relative Volume"] < 0.2), "Habitate size"] = "[0.1,0.2)"
-# df.loc[(df["Relative Volume"] > 0.2) & (df["Relative Volume"] < 0.3), "Habitate size"] = "[0.2,0.3)"
-# df.loc[(df["Relative Volume"] > 0.3) & (df["Relative Volume"] < 0.4), "Habitate size"] = "[0.3,0.4)"
-# df.loc[(df["Relative Volume"] > 0.4) & (df["Relative Volume"] < 0.5), "Habitate size"] = "[0.4,0.5)"
-# df.loc[(df["Relative Volume"] > 0.5) & (df["Relative Volume"] < 0.6), "Habitate size"] = "[0.5,0.6)"
-# df.loc[(df["Relative Volume"] > 0.6) & (df["Relative Volume"] < 0.7), "Habitate size"] = "[0.6,0.7)"
-# df.loc[(df["Relative Volume"] > 0.7) & (df["Relative Volume"] < 0.8), "Habitate size"] = "[0.7,0.8)"
-# df.loc[(df["Relative Volume"] > 0.8) & (df["Relative Volume"] < 0.9), "Habitate size"] = "[0.8,0.9)"
-# df.loc[df["Relative Volume"] > 0.9, "Habitate size"] = "[0.9,1.0)"
-# df.loc[df["Relative Volume"] > 0.8, "Habitate size"] = "[0.8,1.0]"
-# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitate size", "Radius", "Relative Volume"], value_vars=["Total", "Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Density")
+df["Habitat size"] = np.nan
+# df.loc[df["Relative Volume"] < 0.3, "Habitat size"] = "Small"
+df.loc[(df["Relative Volume"] < 0.4) & (df["Relative Volume"] > 0.2), "Habitat size"] = "(0.2~0.4)"
+df.loc[(df["Relative Volume"] > 0.4) & (df["Relative Volume"] < 0.6), "Habitat size"] = "(0.4~0.6)"
+df.loc[(df["Relative Volume"] > 0.6) & (df["Relative Volume"] < 0.8), "Habitat size"] = "(0.6~0.8)"
+# df.loc[(df["Relative Volume"] > 0.5) & (df["Relative Volume"] < 0.7), "Habitat size"] = "(0.5~0.7)"
+# df.loc[df["Relative Volume"] >= 0.8, "Habitat size"] = "Large"
+df.loc[df["Relative Volume"] > 0.8, "Habitat size"] = "(0.8~1.0)"
+df.loc[df["Relative Volume"] < 0.2, "Habitat size"] = "(0.0~0.2)"
+# df.loc[df["Relative Volume"] < 0.1, "Habitat size"] = "[0,0.1)"
+# df.loc[(df["Relative Volume"] > 0.1) & (df["Relative Volume"] < 0.2), "Habitat size"] = "[0.1,0.2)"
+# df.loc[(df["Relative Volume"] > 0.2) & (df["Relative Volume"] < 0.3), "Habitat size"] = "[0.2,0.3)"
+# df.loc[(df["Relative Volume"] > 0.3) & (df["Relative Volume"] < 0.4), "Habitat size"] = "[0.3,0.4)"
+# df.loc[(df["Relative Volume"] > 0.4) & (df["Relative Volume"] < 0.5), "Habitat size"] = "[0.4,0.5)"
+# df.loc[(df["Relative Volume"] > 0.5) & (df["Relative Volume"] < 0.6), "Habitat size"] = "[0.5,0.6)"
+# df.loc[(df["Relative Volume"] > 0.6) & (df["Relative Volume"] < 0.7), "Habitat size"] = "[0.6,0.7)"
+# df.loc[(df["Relative Volume"] > 0.7) & (df["Relative Volume"] < 0.8), "Habitat size"] = "[0.7,0.8)"
+# df.loc[(df["Relative Volume"] > 0.8) & (df["Relative Volume"] < 0.9), "Habitat size"] = "[0.8,0.9)"
+# df.loc[df["Relative Volume"] > 0.9, "Habitat size"] = "[0.9,1.0)"
+# df.loc[df["Relative Volume"] > 0.8, "Habitat size"] = "[0.8,1.0]"
+# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitat size", "Radius", "Relative Volume"], value_vars=["Total", "Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Density")
 # color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue', 'Total': 'grey'}
-df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitate size", "Radius", "Relative Volume"], value_vars=["Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Density")
+df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitat size", "Radius", "Relative Volume"], value_vars=["Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Density")
 color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue'}
-# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitate size", "Radius", "Relative Volume"], value_vars=["Variovorax / Volume", "Sphingopyxis / Volume", "Rhodococcus/ Volume"], var_name="Species", value_name="Density / Habitate size")
+# df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitat size", "Radius", "Relative Volume"], value_vars=["Variovorax / Volume", "Sphingopyxis / Volume", "Rhodococcus/ Volume"], var_name="Species", value_name="Density / Habitat size")
 # color_map = {'Variovorax / Volume': 'red', 'Sphingopyxis / Volume': 'green', 'Rhodococcus/ Volume': 'blue'}
 
 df4plot = df4plot.loc[(df4plot["Density"] > 0)].copy()
 # df4plot = df4plot.loc[df4plot["Time"] == 37]
-# sns.boxplot(data=df4plot[df4plot["Time"] == 90 & (df4plot["Carbon"] == "Nag")], x="Habitate size", y="Density", hue="Species", palette=color_map, sym = "")
-# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Nag")], x="Habitate size", y="Density", hue="Species", palette=color_map, sym = "")
-# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chito5")], x="Habitate size", y="Density", hue="Species", palette=color_map, sym = "")
-# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chitin")], x="Habitate size", y="Density", hue="Species", palette=color_map, sym = "")
+# sns.boxplot(data=df4plot[df4plot["Time"] == 90 & (df4plot["Carbon"] == "NAG")], x="Habitat size", y="Density", hue="Species", palette=color_map, showfliers = False)
+# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "NAG")], x="Habitat size", y="Density", hue="Species", palette=color_map, showfliers = False)
+# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chitopentose")], x="Habitat size", y="Density", hue="Species", palette=color_map, showfliers = False)
+# sns.boxplot(data=df4plot[(df4plot["Carbon"] == "Chitin")], x="Habitat size", y="Density", hue="Species", palette=color_map, showfliers = False)
 # plt.ylim(1, 1.5e4)
 # plt.yscale("log")
 
 matplotlib.rcParams['figure.figsize'] = (3, 3)
 
 for time in [11, 37, 90]:
-    for carbon in ["Nag", "Chito5", "Chitin"]:
+    for carbon in ["NAG", "Chitopentose", "Chitin"]:
         df4plot2 = df4plot.loc[(df4plot["Time"] == time) & (df4plot["Carbon"] == carbon)].copy()
-        sns.boxplot(data=df4plot2, x="Habitate size", y="Density", hue="Species", palette=color_map, sym = "")
+        sns.boxplot(data=df4plot2, x="Habitat size", y="Density", hue="Species", palette=color_map, showfliers = False)
+        # sns.boxplot(data=df4plot2, x="Habitat size", y="Density", hue="Species", palette=color_map)
         plt.legend([],[], frameon=False)
         plt.savefig(result_dir + "density_vs_habitate_size_" + carbon + "_at_" + str(time) + "pdf", bbox_inches='tight', dpi=300)
         plt.close()
@@ -750,7 +768,8 @@ df4plot2 = df4plot.loc[(df4plot["Density"] > 0) & (df4plot["Time"].isin([11,37,9
 
 plt.figure(figsize=(2, 2))
 g = sns.FacetGrid(df4plot2, col="Carbon",  row="Time", margin_titles=True, despine=False, sharey=True, sharex=True)
-g.map_dataframe(sns.boxplot, x="Habitate size", y="Density", hue="Species", palette=color_map, sym = "", order=["(0.2~0.4)", "(0.4~0.6)", "(0.6~0.8)", "(0.8~1.0)"])
+g.map_dataframe(sns.boxplot, x="Habitat size", y="Density", hue="Species", palette=color_map, showfliers = False, order=["(0.2~0.4)", "(0.4~0.6)", "(0.6~0.8)", "(0.8~1.0)"])
+# g.map_dataframe(sns.boxplot, x="Habitat size", y="Density", hue="Species", palette=color_map, order=["(0.2~0.4)", "(0.4~0.6)", "(0.6~0.8)", "(0.8~1.0)"])
 g.add_legend()
 plt.savefig(result_dir + "density_vs_habitate_size_all.pdf", bbox_inches='tight', dpi=300)
 
@@ -758,20 +777,20 @@ plt.savefig(result_dir + "density_vs_habitate_size_all.pdf", bbox_inches='tight'
 
 ```{python}
 df = pop_vol_1d_df.copy()
-df["Habitate position"] = np.nan
-df.loc[df["Radius"] < 1500, "Habitate position"] = "Left"
-df.loc[(df["Radius"] >= 1500) & (df["Radius"] < 3000), "Habitate position"] = "Middle"
-df.loc[df["Radius"] >= 3000, "Habitate position"] = "Right"
-df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitate position", "Radius", "Relative Volume"], value_vars=["Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Biomass")
+df["Habitat position"] = np.nan
+df.loc[df["Radius"] < 1500, "Habitat position"] = "Left"
+df.loc[(df["Radius"] >= 1500) & (df["Radius"] < 3000), "Habitat position"] = "Middle"
+df.loc[df["Radius"] >= 3000, "Habitat position"] = "Right"
+df4plot = pd.melt(df, id_vars=["Time", "Carbon", "Habitat position", "Radius", "Relative Volume"], value_vars=["Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Biomass")
 color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue'}
 
 df4plot = df4plot.loc[df4plot["Biomass"] > 0]
 
 
 for time in [11, 37, 90]:
-    for carbon in ["Nag", "Chito5", "Chitin"]:
+    for carbon in ["NAG", "Chitopentose", "Chitin"]:
         df4plot2 = df4plot.loc[df4plot["Time"] == time & (df4plot["Carbon"] == carbon)]
-        sns.boxplot(data=df4plot2, x="Habitate position", y="Biomass", hue="Species", palette=color_map, sym = "")
+        sns.boxplot(data=df4plot2, x="Habitat position", y="Biomass", hue="Species", palette=color_map, showfliers = False)
         plt.legend([],[], frameon=False)
         plt.yscale("log")
         plt.savefig(result_dir + "biomass_vs_habitate_position_" + carbon + "_at_" + str(time) + "pdf", bbox_inches='tight', dpi=300)
@@ -781,7 +800,7 @@ for time in [11, 37, 90]:
 
 ```{python}
 df = pop_den_1d_df.copy()
-# df = df[df["Time"] == 90 & (df["Rep"] == 'rep2') & (df["Carbon"] == 'Nag')]
+# df = df[df["Time"] == 90 & (df["Rep"] == 'rep2') & (df["Carbon"] == 'NAG')]
 df = df[df["Time"] == 90 & (df["Rep"] == 'rep2')]
 # df["Time"] = df["Time"].astype(str) + " h"
 # df["Time"] = (df["Time"]) / 5 + 2
@@ -797,8 +816,16 @@ fig.show()
 ```
 
 ```{python}
+pop_vol[(pop_vol["Time"] == 90) & (pop_vol["Carbon"] == "NAG")][["Variovorax", "Sphingopyxis", "Rhodococcus"]].mean(axis=0)
+test = pop_vol[(pop_vol["Time"] == 90) & (pop_vol["Carbon"] == "NAG")][["Variovorax", "Sphingopyxis", "Rhodococcus"]]
+```
 
 
+```{python}
+sp.stats.f_oneway(test["Variovorax"][:2], test["Sphingopyxis"][:2], test["Rhodococcus"][:2])
+```
+
+```{python}
 ```
 
 
