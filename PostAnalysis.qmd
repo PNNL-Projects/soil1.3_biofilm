@@ -514,11 +514,11 @@ for time in times:
     for rep in ["rep" + str(i+1) for i in range(3)]:
         dfr = df[(df["Time"] == time) & (df["Rep"] == rep)].copy()
         # ymax = dfr[['Variovorax', 'Sphingopyxis', 'Rhodococcus']].values.flatten().max()
-        for carbon in ["NAG", "Chito", "Chitin"]:
+        for carbon in ["NAG", "Chitopentose", "Chitin"]:
             dft = dfr[(dfr["Carbon"] == carbon)].copy()
             fig = px.line(dft, x='Radius', y=['Variovorax', 'Sphingopyxis', 'Rhodococcus', 'Relative Volume'], title="Population density of " + rep + " with " + carbon + " at " + str(time) + "h", color_discrete_map=color_map, template="ggplot2")
             # fig.show()
-            fig.write_image(result_dir + "spatial/exploratory/pop_den_" + rep +"_with_" + carbon + "_at_" + str(time) + "h_" + str(slide_win) + ".pdf", scale=1, width=1000, height=500)
+            fig.write_image(analysis_dir + "spatial/exploratory/pop_den_" + rep +"_with_" + carbon + "_at_" + str(time) + "h_" + str(slide_win) + ".pdf", scale=1, width=1000, height=500)
 ```
 
 ```{python}
@@ -536,7 +536,7 @@ for carbon in ["NAG", "Chitopentose", "Chitin"]:
             fig = px.line(dft, x='Radius', y=['Variovorax', 'Sphingopyxis', 'Rhodococcus'], title="Population size of " + rep + " with " + carbon + " at " + str(time) + "h", color_discrete_map=color_map, template="ggplot2")
             fig.update_layout(yaxis_range=[0,ymax])
             # fig.show()
-            fig.write_image(result_dir + "spatial/exploratory/pop_vol_" + rep +"_with_" + carbon + "_at_" + str(time) + "h_" + str(slide_win) + ".pdf", scale=1, width=1000, height=500)
+            fig.write_image(analysis_dir + "spatial/exploratory/pop_vol_" + rep +"_with_" + carbon + "_at_" + str(time) + "h_" + str(slide_win) + ".pdf", scale=1, width=1000, height=500)
 ```
 
 
@@ -553,7 +553,7 @@ for time in times:
             dft["Relative Volume"] = dft["Relative Volume"] * vol_scalor
             fig = px.line(dft, x='Radius', y=['Variovorax / Volume', 'Sphingopyxis / Volume', 'Rhodococcus/ Volume', 'Relative Volume'], title="Population size of " + rep + " with " + carbon + " at " + str(time) + "h", color_discrete_map=color_map, template="ggplot2")
             # fig.show()
-            fig.write_image(result_dir + "spatial/exploratory/pop_rel_vol_" + rep +"_with_" + carbon + "_at_" + str(time) + "h_" + str(slide_win) + ".pdf", scale=1, width=1000, height=500)
+            fig.write_image(analysis_dir + "spatial/exploratory/pop_rel_vol_" + rep +"_with_" + carbon + "_at_" + str(time) + "h_" + str(slide_win) + ".pdf", scale=1, width=1000, height=500)
 ```
 
 
@@ -651,6 +651,16 @@ plt.ylim(0, 1.1e8)
 plt.savefig(analysis_dir + "boxplot_Chitin_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 ```
+
+```{python}
+df = pop_vol_melted
+# for time in times:
+for time in [90]:
+    for carbon in ["NAG", "Chitopentose", "Chitin"]:
+        for species in ["Variovorax", "Sphingopyxis", "Rhodococcus"]:
+            print("The average biomass of {} in {} condition at {} hours is {}".format(species, carbon, time, df[(df["Carbon"] == carbon) & (df["Time"] == time) & (df["Species"] == species)]["Biomass"].mean()))
+```
+
 
 ```{python}
 df = pop_vol_1d_df.copy()
