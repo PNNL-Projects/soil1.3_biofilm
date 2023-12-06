@@ -1,4 +1,5 @@
 .vscode
+*.ipynb
 tools
 reports
 results
