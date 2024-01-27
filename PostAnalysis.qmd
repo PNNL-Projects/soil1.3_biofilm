@@ -1,4 +1,5 @@
 ---
+title: Analyze all data
 jupyter: python3
 ---
 
@@ -28,6 +29,7 @@ import tifffile
 import plotly.express as px
 import plotly.graph_objs as go
 import seaborn as sns
+from statannotations.Annotator import Annotator
 ```
 
 ```{python}
@@ -172,10 +174,6 @@ pop_vol_df = pd.read_pickle(analysis_dir + "pop_volumes.pkl")
 ```
 
 ```{python}
-
-```
-
-```{python}
 df = pop_den_df.copy()
 df["Time"] = (df["Time"]) / 5 + 2
 fig = px.scatter_ternary(df[pop_den_df["Rep"] == "rep1"], 
@@ -218,7 +216,6 @@ fig.update_ternaries(aaxis_color="red", baxis_color="green", caxis_color="blue")
 fig.show()
 fig.write_image(analysis_dir + "rep123.pdf")
 ```
-
 
 ```{python}
 df = pop_den_df.copy()
@@ -327,7 +324,6 @@ spatial_dir = analysis_dir + "spatial/"
 Path(spatial_dir).mkdir(parents=True, exist_ok=True)
 ```
 
-
 ```{python}
 pop_vol_1d_df = pd.DataFrame(pop_volumes_1d, columns = ["Rep", "Carbon", "Time", "Variovorax", "Sphingopyxis", "Rhodococcus", "Radius", "Volume"])
 pop_vol_1d_df["Relative Volume"] = pop_vol_1d_df["Volume"] / pop_vol_1d_df["Volume"].max()
@@ -358,7 +354,6 @@ delta_pop_vol_1d_df = pd.read_pickle(analysis_dir + "spatial/delta_pop_vol_1d_df
 pop_den_1d_df = pd.read_pickle(analysis_dir + "spatial/pop_den_1d_df_" + str(slide_win) + ".pkl")
 delta_pop_den_1d_df = pd.read_pickle(analysis_dir + "spatial/delta_pop_den_1d_df_" + str(slide_win) + ".pkl")
 ```
-
 
 ```{python}
 df = pop_den_1d_df.copy()
@@ -499,13 +494,11 @@ fig.show()
 fig.write_image(analysis_dir + "spatial/1Drep3_" + str(slide_win) + ".pdf")
 ```
 
-
 ```{python}
 times = [0, 11, 22, 37, 66, 90]
 exploratory_dir = result_dir + "spatial/exploratory/"
 Path(exploratory_dir).mkdir(parents=True, exist_ok=True)
 ```
-
 
 ```{python}
 df = pop_den_1d_df.copy()
@@ -539,7 +532,6 @@ for carbon in ["NAG", "Chitopentose", "Chitin"]:
             fig.write_image(analysis_dir + "spatial/exploratory/pop_vol_" + rep +"_with_" + carbon + "_at_" + str(time) + "h_" + str(slide_win) + ".pdf", scale=1, width=1000, height=500)
 ```
 
-
 ```{python}
 df = pop_vol_1d_df.copy()
 color_map = {'Variovorax / Volume': 'red', 'Sphingopyxis / Volume': 'green', 'Rhodococcus/ Volume': 'blue', 'Relative Volume': 'grey'}
@@ -556,14 +548,36 @@ for time in times:
             fig.write_image(analysis_dir + "spatial/exploratory/pop_rel_vol_" + rep +"_with_" + carbon + "_at_" + str(time) + "h_" + str(slide_win) + ".pdf", scale=1, width=1000, height=500)
 ```
 
-
-
-
 ```{python}
 print("The maximum habitat size is: {}".format(pop_den_1d_df["Volume"].max()))
 ```
 
-# Analyze all data
+
+
+```{python}
+import time
+import datetime
+import seaborn as sns
+import matplotlib.pyplot as plt
+from pathlib import Path
+import numpy as np
+import scipy as sp
+import pandas as pd
+from statannotations.Annotator import Annotator
+import matplotlib
+%matplotlib inline
+matplotlib.rcParams['figure.dpi'] = 200
+matplotlib.rcParams['figure.figsize'] = (5, 5)
+```
+
+```{python}
+work_dir = "/Users/feng626/workspace/data/soil1.3/spatial_interactions/"
+result_dir = work_dir + "20220408/"
+
+# analysis_dir = "./results/{}/".format(datetime.datetime.now().strftime("%Y%m%d_%H_%M_%S.%f"))
+analysis_dir = "./results/{}/".format(datetime.datetime.now().strftime("%Y%m%d"))
+Path(analysis_dir).mkdir(parents=True, exist_ok=True)
+```
 
 ```{python}
 slide_win = 500
@@ -616,38 +630,303 @@ plt.close()
 ```
 
 ```{python}
-
 pop_vol_melted = pd.melt(pop_vol, id_vars=["Time", "Carbon"], value_vars=["Total", "Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Biomass")
 
 color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue'}
-sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "NAG")], x="Time", y="Biomass", hue="Species", palette=color_map)
+
+pairs=[("Variovorax", "Sphingopyxis"), ("Sphingopyxis", "Rhodococcus"), ("Rhodococcus", "Variovorax")]
+
+# df = pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "NAG")]
+# ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+# plt.ylim(0, 1.1e8)
+# plt.legend([],[], frameon=False)
+# annotator = Annotator(ax, pairs, data=df, x="Species", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
+# plt.savefig(analysis_dir + "boxplot_NAG_volume.pdf", bbox_inches='tight', dpi=300)
+# plt.close()
+
+# df = pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitopentose")]
+# ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+# plt.ylim(0, 1.1e8)
+# plt.legend([],[], frameon=False)
+# annotator = Annotator(ax, pairs, data=df, x="Species", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
+# plt.savefig(analysis_dir + "boxplot_Chitopentose_volume.pdf", bbox_inches='tight', dpi=300)
+# plt.close()
+
+# df = pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitin")]
+# ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+# plt.ylim(0, 1.1e8)
+# annotator = Annotator(ax, pairs, data=df, x="Species", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
+# plt.savefig(analysis_dir + "boxplot_Chitin_volume.pdf", bbox_inches='tight', dpi=300)
+# plt.close()
+
+color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue', 'Total': 'grey'}
+
+pairs=[
+    [(0, "Sphingopyxis"), (0, "Variovorax")], 
+    [(0, "Rhodococcus"),(0, "Sphingopyxis")], 
+    [(0, "Variovorax"), (0, "Rhodococcus")],
+    
+    [(11, "Sphingopyxis"), (11, "Variovorax")], 
+    [(11, "Rhodococcus"),(11, "Sphingopyxis")], 
+    [(11, "Variovorax"), (11, "Rhodococcus")],
+    
+    [(22, "Sphingopyxis"), (22, "Variovorax")], 
+    [(22, "Rhodococcus"),(22, "Sphingopyxis")], 
+    [(22, "Variovorax"), (22, "Rhodococcus")],
+    
+    [(37, "Sphingopyxis"), (37, "Variovorax")], 
+    [(37, "Rhodococcus"),(37, "Sphingopyxis")], 
+    [(37, "Variovorax"), (37, "Rhodococcus")],
+    
+    [(66, "Sphingopyxis"), (66, "Variovorax")], 
+    [(66, "Rhodococcus"),(66, "Sphingopyxis")], 
+    [(66, "Variovorax"), (66, "Rhodococcus")],
+    
+    [(90, "Sphingopyxis"), (90, "Variovorax")], 
+    [(90, "Rhodococcus"),(90, "Sphingopyxis")], 
+    [(90, "Variovorax"), (90, "Rhodococcus")],
+    ]
+
+
+df = pop_vol_melted[(pop_vol_melted["Carbon"] == "NAG")]
+
+hue_plot_params = {
+    'data': df,
+    'x': 'Time',
+    'y': 'Biomass',
+    # "order": subcat_order,
+    "hue": "Species",
+    # "hue_order": states_order,
+    "palette": color_map
+}
+
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 1.1e8)
 plt.legend([],[], frameon=False)
+annotator = Annotator(ax, pairs, **hue_plot_params)
+annotator.configure(test="Mann-Whitney").apply_and_annotate()
+plt.savefig(analysis_dir + "boxplot_NAG_volume_with_tot_inter_species.pdf", bbox_inches='tight', dpi=300)
+plt.close()
+
+df = pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitopentose")]
+
+hue_plot_params = {
+    'data': df,
+    'x': 'Time',
+    'y': 'Biomass',
+    # "order": subcat_order,
+    "hue": "Species",
+    # "hue_order": states_order,
+    "palette": color_map
+}
+
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 1.1e8)
+plt.legend([],[], frameon=False)
+annotator = Annotator(ax, pairs, **hue_plot_params)
+annotator.configure(test="Mann-Whitney").apply_and_annotate()
+plt.savefig(analysis_dir + "boxplot_Chitopentose_volume_with_tot_inter_species.pdf", bbox_inches='tight', dpi=300)
+plt.close()
+
+df = pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitin")]
+
+hue_plot_params = {
+    'data': df,
+    'x': 'Time',
+    'y': 'Biomass',
+    # "order": subcat_order,
+    "hue": "Species",
+    # "hue_order": states_order,
+    "palette": color_map
+}
+
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 1.1e8)
+annotator = Annotator(ax, pairs, **hue_plot_params)
+annotator.configure(test="Mann-Whitney").apply_and_annotate()
+plt.savefig(analysis_dir + "boxplot_Chitin_volume_with_tot_inter_species.pdf", bbox_inches='tight', dpi=300)
+plt.close()
+```
+
+```{python}
+pop_vol_melted = pd.melt(pop_vol, id_vars=["Time", "Carbon"], value_vars=["Total", "Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Biomass")
+
+color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue'}
+
+pairs=[("Variovorax", "Sphingopyxis"), ("Sphingopyxis", "Rhodococcus"), ("Rhodococcus", "Variovorax")]
+
+# df = pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "NAG")]
+# ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+# plt.ylim(0, 1.1e8)
+# plt.legend([],[], frameon=False)
+# annotator = Annotator(ax, pairs, data=df, x="Species", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
+# plt.savefig(analysis_dir + "boxplot_NAG_volume.pdf", bbox_inches='tight', dpi=300)
+# plt.close()
+
+# df = pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitopentose")]
+# ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+# plt.ylim(0, 1.1e8)
+# plt.legend([],[], frameon=False)
+# annotator = Annotator(ax, pairs, data=df, x="Species", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
+# plt.savefig(analysis_dir + "boxplot_Chitopentose_volume.pdf", bbox_inches='tight', dpi=300)
+# plt.close()
+
+# df = pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitin")]
+# ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+# plt.ylim(0, 1.1e8)
+# annotator = Annotator(ax, pairs, data=df, x="Species", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
+# plt.savefig(analysis_dir + "boxplot_Chitin_volume.pdf", bbox_inches='tight', dpi=300)
+# plt.close()
+
+color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue', 'Total': 'grey'}
+
+pairs=[
+    [(11, "Sphingopyxis"), (37, "Sphingopyxis")], 
+    [(11, "Rhodococcus"),(37, "Rhodococcus")], 
+    [(11, "Variovorax"), (37, "Variovorax")],
+    
+    [(37, "Sphingopyxis"), (90, "Sphingopyxis")], 
+    [(37, "Rhodococcus"),(90, "Rhodococcus")], 
+    [(37, "Variovorax"), (90, "Variovorax")],
+    ]
+
+
+df = pop_vol_melted[(pop_vol_melted["Carbon"] == "NAG")]
+
+hue_plot_params = {
+    'data': df,
+    'x': 'Time',
+    'y': 'Biomass',
+    # "order": subcat_order,
+    "hue": "Species",
+    # "hue_order": states_order,
+    "palette": color_map
+}
+
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 1.1e8)
+plt.legend([],[], frameon=False)
+annotator = Annotator(ax, pairs, **hue_plot_params)
+annotator.configure(test="Mann-Whitney").apply_and_annotate()
+plt.savefig(analysis_dir + "boxplot_NAG_volume_with_tot_inter_time.pdf", bbox_inches='tight', dpi=300)
+plt.close()
+
+df = pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitopentose")]
+
+hue_plot_params = {
+    'data': df,
+    'x': 'Time',
+    'y': 'Biomass',
+    # "order": subcat_order,
+    "hue": "Species",
+    # "hue_order": states_order,
+    "palette": color_map
+}
+
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 1.1e8)
+plt.legend([],[], frameon=False)
+annotator = Annotator(ax, pairs, **hue_plot_params)
+annotator.configure(test="Mann-Whitney").apply_and_annotate()
+plt.savefig(analysis_dir + "boxplot_Chitopentose_volume_with_tot_inter_time.pdf", bbox_inches='tight', dpi=300)
+plt.close()
+
+df = pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitin")]
+
+hue_plot_params = {
+    'data': df,
+    'x': 'Time',
+    'y': 'Biomass',
+    # "order": subcat_order,
+    "hue": "Species",
+    # "hue_order": states_order,
+    "palette": color_map
+}
+
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 1.1e8)
+annotator = Annotator(ax, pairs, **hue_plot_params)
+annotator.configure(test="Mann-Whitney").apply_and_annotate()
+plt.savefig(analysis_dir + "boxplot_Chitin_volume_with_tot_inter_time.pdf", bbox_inches='tight', dpi=300)
+plt.close()
+```
+
+```{python}
+pop_vol_melted = pd.melt(pop_vol, id_vars=["Time", "Carbon"], value_vars=["Total", "Variovorax", "Sphingopyxis", "Rhodococcus"], var_name="Species", value_name="Biomass")
+
+color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue'}
+
+pairs=[("Variovorax", "Sphingopyxis"), ("Sphingopyxis", "Rhodococcus"), ("Rhodococcus", "Variovorax")]
+
+df = pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "NAG")]
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
+plt.ylim(0, 1.1e8)
+plt.legend([],[], frameon=False)
+# annotator = Annotator(ax, pairs, data=df, x="Species", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
 plt.savefig(analysis_dir + "boxplot_NAG_volume.pdf", bbox_inches='tight', dpi=300)
 plt.close()
-sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitopentose")], x="Time", y="Biomass", hue="Species", palette=color_map)
+
+df = pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitopentose")]
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 1.1e8)
 plt.legend([],[], frameon=False)
+# annotator = Annotator(ax, pairs, data=df, x="Time", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
 plt.savefig(analysis_dir + "boxplot_Chitopentose_volume.pdf", bbox_inches='tight', dpi=300)
 plt.close()
-sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitin")], x="Time", y="Biomass", hue="Species", palette=color_map)
+
+df = pop_vol_melted[(pop_vol_melted["Species"] != "Total") & (pop_vol_melted["Carbon"] == "Chitin")]
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 1.1e8)
+# annotator = Annotator(ax, pairs, data=df, x="Time", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
 plt.savefig(analysis_dir + "boxplot_Chitin_volume.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 
 color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue', 'Total': 'grey'}
-sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "NAG")], x="Time", y="Biomass", hue="Species", palette=color_map)
+
+df = pop_vol_melted[(pop_vol_melted["Carbon"] == "NAG")]
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 1.1e8)
 plt.legend([],[], frameon=False)
+# annotator = Annotator(ax, pairs, data=df, x="Species", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
 plt.savefig(analysis_dir + "boxplot_NAG_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
 plt.close()
-sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitopentose")], x="Time", y="Biomass", hue="Species", palette=color_map)
+
+df = pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitopentose")]
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 1.1e8)
 plt.legend([],[], frameon=False)
+# annotator = Annotator(ax, pairs, data=df, x="Time", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
 plt.savefig(analysis_dir + "boxplot_Chitopentose_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
 plt.close()
-sns.boxplot(data=pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitin")], x="Time", y="Biomass", hue="Species", palette=color_map)
+
+df = pop_vol_melted[(pop_vol_melted["Carbon"] == "Chitin")]
+ax = sns.boxplot(data=df, x="Time", y="Biomass", hue="Species", palette=color_map)
 plt.ylim(0, 1.1e8)
+# annotator = Annotator(ax, pairs, data=df, x="Time", y="Biomass") #, order=order)
+# annotator.configure(test='Mann-Whitney', text_format='star', loc='outside')
+# annotator.apply_and_annotate()
 plt.savefig(analysis_dir + "boxplot_Chitin_volume_with_tot.pdf", bbox_inches='tight', dpi=300)
 plt.close()
 ```
@@ -660,7 +939,6 @@ for time in [90]:
         for species in ["Variovorax", "Sphingopyxis", "Rhodococcus"]:
             print("The average biomass of {} in {} condition at {} hours is {}".format(species, carbon, time, df[(df["Carbon"] == carbon) & (df["Time"] == time) & (df["Species"] == species)]["Biomass"].mean()))
 ```
-
 
 ```{python}
 df = pop_vol_1d_df.copy()
@@ -778,15 +1056,47 @@ df4plot = df4plot.loc[(df4plot["Density"] > 0)].copy()
 # plt.ylim(1, 1.5e4)
 # plt.yscale("log")
 
-matplotlib.rcParams['figure.figsize'] = (3, 3)
+matplotlib.rcParams['figure.figsize'] = (4, 4)
+
+pairs=[
+    [("(0.2~0.4)", "Sphingopyxis"), ("(0.8~1.0)", "Sphingopyxis")], 
+    [("(0.2~0.4)", "Rhodococcus"),("(0.8~1.0)", "Rhodococcus")], 
+    [("(0.2~0.4)", "Variovorax"), ("(0.8~1.0)", "Variovorax")],
+    
+    # [("(0.4~0.6)", "Sphingopyxis"), ("(0.4~0.6)", "Variovorax")], 
+    # [("(0.4~0.6)", "Rhodococcus"),("(0.4~0.6)", "Sphingopyxis")], 
+    # [("(0.4~0.6)", "Variovorax"), ("(0.4~0.6)", "Rhodococcus")],
+    
+    # [("(0.6~0.8)", "Sphingopyxis"), ("(0.6~0.8)", "Variovorax")], 
+    # [("(0.6~0.8)", "Rhodococcus"),("(0.6~0.8)", "Sphingopyxis")], 
+    # [("(0.6~0.8)", "Variovorax"), ("(0.6~0.8)", "Rhodococcus")],
+    
+    # [("(0.8~1.0)", "Sphingopyxis"), ("(0.8~1.0)", "Variovorax")], 
+    # [("(0.8~1.0)", "Rhodococcus"),("(0.8~1.0)", "Sphingopyxis")], 
+    # [("(0.8~1.0)", "Variovorax"), ("(0.8~1.0)", "Rhodococcus")],
+    ]
+# formatted_pvalues = [f"p={p:.2e}" for p in pvalues]
 
 for time in [11, 37, 90]:
     for carbon in ["NAG", "Chitopentose", "Chitin"]:
         df4plot2 = df4plot.loc[(df4plot["Time"] == time) & (df4plot["Carbon"] == carbon)].copy()
-        sns.boxplot(data=df4plot2, x="Habitat size", y="Density", hue="Species", palette=color_map, showfliers = False)
+        hue_plot_params = {
+            'data': df4plot2,
+            'x': 'Habitat size',
+            'y': 'Density',
+            # "order": subcat_order,
+            "order" : ["(0.2~0.4)", "(0.4~0.6)", "(0.6~0.8)", "(0.8~1.0)"],
+            "hue": "Species",
+            # "hue_order": states_order,
+            "palette": color_map
+        }
+        ax = sns.boxplot(data=df4plot2, x="Habitat size", y="Density", hue="Species", palette=color_map, showfliers = False, order=["(0.2~0.4)", "(0.4~0.6)", "(0.6~0.8)", "(0.8~1.0)"])
         # sns.boxplot(data=df4plot2, x="Habitat size", y="Density", hue="Species", palette=color_map)
+        annotator = Annotator(ax, pairs, **hue_plot_params)
+        # annotator.configure(test="Mann-Whitney").set_custom_annotations(formatted_pvalues).apply_and_annotate()
+        annotator.configure(test="Mann-Whitney").apply_and_annotate()
         plt.legend([],[], frameon=False)
-        plt.savefig(analysis_dir + "density_vs_habitate_size_" + carbon + "_at_" + str(time) + "pdf", bbox_inches='tight', dpi=300)
+        plt.savefig(analysis_dir + "density_vs_habitate_size_" + carbon + "_at_" + str(time) + "_selective.pdf", bbox_inches='tight', dpi=300)
         plt.close()
 
 
@@ -802,7 +1112,6 @@ g.map_dataframe(sns.boxplot, x="Habitat size", y="Density", hue="Species", palet
 # g.map_dataframe(sns.boxplot, x="Habitat size", y="Density", hue="Species", palette=color_map, order=["(0.2~0.4)", "(0.4~0.6)", "(0.6~0.8)", "(0.8~1.0)"])
 g.add_legend()
 plt.savefig(analysis_dir + "density_vs_habitate_size_all.pdf", bbox_inches='tight', dpi=300)
-
 ```
 
 ```{python}
@@ -819,15 +1128,45 @@ color_map = {'Variovorax': 'red', 'Sphingopyxis': 'green', 'Rhodococcus': 'blue'
 
 df4plot = df4plot.loc[(df4plot["Density"] > 0)].copy()
 
-matplotlib.rcParams['figure.figsize'] = (3, 3)
+matplotlib.rcParams['figure.figsize'] = (4, 4)
+
+pairs=[
+    [("(0.2~0.4)", "Sphingopyxis"), ("(0.2~0.4)", "Variovorax")], 
+    [("(0.2~0.4)", "Rhodococcus"),("(0.2~0.4)", "Sphingopyxis")], 
+    [("(0.2~0.4)", "Variovorax"), ("(0.2~0.4)", "Rhodococcus")],
+    
+    [("(0.4~0.6)", "Sphingopyxis"), ("(0.4~0.6)", "Variovorax")], 
+    [("(0.4~0.6)", "Rhodococcus"),("(0.4~0.6)", "Sphingopyxis")], 
+    [("(0.4~0.6)", "Variovorax"), ("(0.4~0.6)", "Rhodococcus")],
+    
+    [("(0.6~0.8)", "Sphingopyxis"), ("(0.6~0.8)", "Variovorax")], 
+    [("(0.6~0.8)", "Rhodococcus"),("(0.6~0.8)", "Sphingopyxis")], 
+    [("(0.6~0.8)", "Variovorax"), ("(0.6~0.8)", "Rhodococcus")],
+    
+    [("(0.8~1.0)", "Sphingopyxis"), ("(0.8~1.0)", "Variovorax")], 
+    [("(0.8~1.0)", "Rhodococcus"),("(0.8~1.0)", "Sphingopyxis")], 
+    [("(0.8~1.0)", "Variovorax"), ("(0.8~1.0)", "Rhodococcus")],
+    ]
 
 for time in times: # [11, 37, 90]:
     for carbon in ["NAG", "Chitopentose", "Chitin"]:
         df4plot2 = df4plot.loc[(df4plot["Time"] == time) & (df4plot["Carbon"] == carbon)].copy()
-        sns.boxplot(data=df4plot2, x="Habitat size", y="Density", hue="Species", palette=color_map, showfliers = False)
+        hue_plot_params = {
+            'data': df4plot2,
+            'x': 'Habitat size',
+            'y': 'Density',
+            # "order": subcat_order,
+            "order" : ["(0.2~0.4)", "(0.4~0.6)", "(0.6~0.8)", "(0.8~1.0)"],
+            "hue": "Species",
+            # "hue_order": states_order,
+            "palette": color_map
+        }
+        ax = sns.boxplot(data=df4plot2, x="Habitat size", y="Density", hue="Species", palette=color_map, showfliers = False, order=["(0.2~0.4)", "(0.4~0.6)", "(0.6~0.8)", "(0.8~1.0)"])
         # sns.boxplot(data=df4plot2, x="Habitat size", y="Density", hue="Species", palette=color_map)
+        annotator = Annotator(ax, pairs, **hue_plot_params)
+        annotator.configure(test="Mann-Whitney").apply_and_annotate()
         plt.legend([],[], frameon=False)
-        plt.savefig(analysis_dir + "density_vs_habitate_size_" + carbon + "_at_" + str(time) + "pdf", bbox_inches='tight', dpi=300)
+        plt.savefig(analysis_dir + "density_vs_habitate_size_" + carbon + "_at_" + str(time) + ".pdf", bbox_inches='tight', dpi=300)
         plt.close()
 
 
@@ -841,7 +1180,6 @@ g.map_dataframe(sns.boxplot, x="Habitat size", y="Density", hue="Species", palet
 # g.map_dataframe(sns.boxplot, x="Habitat size", y="Density", hue="Species", palette=color_map, order=["(0.2~0.4)", "(0.4~0.6)", "(0.6~0.8)", "(0.8~1.0)"])
 g.add_legend()
 plt.savefig(analysis_dir + "density_vs_habitate_size_all_times.pdf", bbox_inches='tight', dpi=300)
-
 ```
 
 ```{python}
@@ -864,7 +1202,6 @@ for time in [11, 37, 90]:
         plt.yscale("log")
         plt.savefig(analysis_dir + "biomass_vs_habitate_position_" + carbon + "_at_" + str(time) + "pdf", bbox_inches='tight', dpi=300)
         plt.close()
-
 ```
 
 ```{python}
@@ -887,7 +1224,6 @@ for time in [0, 22, 66]:
         plt.yscale("log")
         plt.savefig(analysis_dir + "biomass_vs_habitate_position_" + carbon + "_at_" + str(time) + "pdf", bbox_inches='tight', dpi=300)
         plt.close()
-
 ```
 
 ```{python}
@@ -912,12 +1248,8 @@ pop_vol[(pop_vol["Time"] == 90) & (pop_vol["Carbon"] == "NAG")][["Variovorax", "
 test = pop_vol[(pop_vol["Time"] == 90) & (pop_vol["Carbon"] == "NAG")][["Variovorax", "Sphingopyxis", "Rhodococcus"]]
 ```
 
-
 ```{python}
 sp.stats.f_oneway(test["Variovorax"][:2], test["Sphingopyxis"][:2], test["Rhodococcus"][:2])
-```
-
-```{python}
 ```
 
 
